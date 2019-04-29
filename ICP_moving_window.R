@@ -82,7 +82,7 @@ START_ROW = 1
 # INPUTS
 # DAP cloud, or cloud 'to be moved'
 # DAP_FULL.path = "H:/MKRF_ICP/DAP_Raw/GC"
-# DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
+DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
 DAP_FULL.path = "H:/AFRF_ICP/DAP_Raw/ALPHA"
 DAP_FULL = lidR::catalog(DAP_FULL.path)
 
