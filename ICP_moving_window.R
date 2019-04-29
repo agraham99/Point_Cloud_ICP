@@ -17,8 +17,6 @@ library(mapview)
 library(rgeos)
 
 
-some bullshift code
-
 # location of the CloudCompare.exe
 CloudCompare = "C:/PROGRA~1/CloudCompare/CloudCompare.exe"
 
