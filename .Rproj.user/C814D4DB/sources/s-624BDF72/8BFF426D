@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1556579343439.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3267352851",
+    "id" : "8BFF426D",
+    "lastKnownWriteTime" : 1556577223,
+    "last_content_update" : 1556577223,
+    "path" : "H:/FYBR/ICP/ICP_model_unwarp.R",
+    "project_path" : "ICP_model_unwarp.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
