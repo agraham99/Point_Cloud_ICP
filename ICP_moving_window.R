@@ -1,3 +1,6 @@
+# R Project: ICP
+# version control with Git
+
 # This script performs a moving window operation where ICP point matching occurs in each 
 # moving window
 # In general, the output is a series of points with the 4x4 rotation/translation matrix of the ICP matching
