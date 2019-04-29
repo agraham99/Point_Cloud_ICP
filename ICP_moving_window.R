@@ -6,6 +6,8 @@
 # In general, the output is a series of points with the 4x4 rotation/translation matrix of the ICP matching
 # process as a row.  
 
+# writing some bs for testing git purposes 
+
 ### install the necessary packages ###
 # install.packages("lidR")
 # install.packages("sp")
