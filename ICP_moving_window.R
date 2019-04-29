@@ -6,6 +6,16 @@
 # In general, the output is a series of points with the 4x4 rotation/translation matrix of the ICP matching
 # process as a row.  
 
+# install.packages("lidR")
+# install.packages("sp")
+# install.packages("raster")
+# install.packages("spatstat")
+# install.packages("doParallel")
+# install.packages("foreach")
+# install.packages("concaveman")
+# install.packages("mapview")
+# install.packages("rgeos")
+
 library(lidR)
 library(sp)
 library(raster)
@@ -15,7 +25,6 @@ library(foreach)
 library(concaveman)
 library(mapview)
 library(rgeos)
-
 
 # location of the CloudCompare.exe
 CloudCompare = "C:/PROGRA~1/CloudCompare/CloudCompare.exe"
