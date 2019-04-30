@@ -69,16 +69,16 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 ### Parameters
 
-*CloudCompare*: path to the locally installed CloudCompare.exe for interfacing the commandline version
-*crs*: Coordinate System in Proj4Text form
+**CloudCompare**: path to the locally installed CloudCompare.exe for interfacing the commandline version
+**crs**: Coordinate System in Proj4Text form
 
-*STEP*: desired distance in meters between moving window centers (ICP observation points)
-*WIN_SIZE*: width/height of each square moving window
+**STEP**: desired distance in meters between moving window centers (ICP observation points)
+**WIN_SIZE**: width/height of each square moving window
 
-*CANOPY_ONLY*: Boolean (T/F) whether or not to use 'top-points only' AKA Digital Surface Model (DSM) points
-*SMALL_TILE_CORES*: number of corse to use (LAScatalog) for picking out canopy points
-*SMALL_TILE_WINDOW*: window size or gridcell size in meters to designate DSM points within the larger moving window
-*SMALL_TILE_BUFFER*: optional buffer for small window size
+**CANOPY_ONLY**: Boolean (T/F) whether or not to use 'top-points only' AKA Digital Surface Model (DSM) points
+**SMALL_TILE_CORES**: number of corse to use (LAScatalog) for picking out canopy points
+**SMALL_TILE_WINDOW**: window size or gridcell size in meters to designate DSM points within the larger moving window
+**SMALL_TILE_BUFFER**: optional buffer for small window size
 
 
 
