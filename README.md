@@ -57,11 +57,31 @@ loaded via a namespace (and not attached):
 - CloudCompare version 2.10 or 2.11 alpha
 https://www.danielgm.net/cc/
 
-## Usage
+# Usage
 
-### ICP_moving_window.R
+## ICP_moving_window.R
 
-![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)
+This script serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
+
+The reference and data (to-be-aligned) point-cloud are clipped to the extent of each window.  The point density of the clipped point-clouds are reduced to the match one another using the subsample tool found in CloudCompare with the 'Spatial' option.  The  ICP algorithm is then performed on the resulting subsampled point clouds.
+
+![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
+
+### Parameters
+
+*CloudCompare*: path to the locally installed CloudCompare.exe for interfacing the commandline version
+*crs*: Coordinate System in Proj4Text form
+
+*STEP*: desired distance in meters between moving window centers (ICP observation points)
+*WIN_SIZE*: width/height of each square moving window
+
+*CANOPY_ONLY*: Boolean (T/F) whether or not to use 'top-points only' AKA Digital Surface Model (DSM) points
+*SMALL_TILE_CORES*: number of corse to use (LAScatalog) for picking out canopy points
+*SMALL_TILE_WINDOW*: window size or gridcell size in meters to designate DSM points within the larger moving window
+*SMALL_TILE_BUFFER*: optional buffer for small window size
+
+
+
 
 
 
