@@ -39,6 +39,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # ------------------------------------------------------------------
 # PARAMETERS (units = meters)
 # STEP: distance between the center of 2 adjacent moving windows
+# STEP parameter does not apply when using external points - see below
 STEP = 50
 # WIN_SIZE: width of square moving window
 WIN_SIZE = 30
@@ -55,7 +56,7 @@ SMALL_TILE_BUFFER = 0
 
 # subsample and ICP parameters
 # SUBSAMPLE_DISTANCE: minimum distance between points for point cloud to be processed in ICP 
-SUBSAMPLE_DISTANCE = 0.5
+SUBSAMPLE_DISTANCE = 0.3
 # RANDOM_SAMPLE_LIMIT: limit of number of points to randomly sample for RMS calcuation for ICP at each iteration
 RANDOM_SAMPLE_LIMIT = 25000
 # ICP_OVERLAP: estimated overlap (%) between the 2 point clouds in each window after ICP
@@ -75,7 +76,7 @@ GLOBAL_SHIFT_Z = 0
 
 # parallel clusters to run
 # N_CLUSTERS: number of processes to run in parallel using the doParallel and foreach packages
-N_CLUSTERS = 8
+N_CLUSTERS = 24
 
 # start row for points
 # START_ROW: if processing from scratch, should be = 1
@@ -86,14 +87,14 @@ START_ROW = 1
 # INPUTS
 # DAP cloud, or cloud 'to be moved'
 # DAP_FULL.path = "H:/MKRF_ICP/DAP_Raw/GC"
-# DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
-DAP_FULL.path = "D:/JOE_RAKOFSKY/DAP/raw"
+# DAP_FULL.path = as.vector(list.files("E:/agraham/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
+DAP_FULL.path = "E:/agraham/DAP_raw_rembuf"
 DAP_FULL = lidR::catalog(DAP_FULL.path)
 
 # ALS cloud, or reference cloud
 # ALS_FULL.path = "H:/MKRF_ICP/ALS_Raw/GC"
-# ALS_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/ALS/raw", pattern = '.laz', full.names = T)[1:1000])
-ALS_FULL.path = "D:/JOE_RAKOFSKY/ALS/raw"
+# ALS_FULL.path = as.vector(list.files("E:/agraham/ALS/raw", pattern = '.laz', full.names = T)[1:1000])
+ALS_FULL.path = "E:/agraham/ALS_raw"
 ALS_FULL = lidR::catalog(ALS_FULL.path)
 
 # OUTPUTS
@@ -102,16 +103,19 @@ ALS_FULL = lidR::catalog(ALS_FULL.path)
 # 1. Original aligned and reference clouds clipped to each moving window bounding box
 # 2. The new aligned clouds for each moving window box
 # 3. Registeration matrix text file produced from the ICP procedure
-ICP_OUTPUT_DIR = 'D:/JOE_RAKOFSKY/ICP_temp_test_roads'
+ICP_OUTPUT_DIR = 'E:/agraham/ICP_temp_test_roads'
 
 # this is a predetermined set of points of interest where we want to perform the ICP estimations
 # For example: points along known roads, or areas where harvest has occurred 
 # use the T/F switch here to specify whether we are using an external points file
 EXTERNAL_POINTS = T
-EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
+EXTERNAL_POINTS_FILE = 'E:/agraham/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
+
+EXTERNAL_BOUNDARY = T
+EXTERNAL_BOUNDARY_FILE = "E:/agraham/SL_subset/SL_subset.shp"
 
 # set a location for ICP observaion points output (csv file)
-points_dir = "D:/JOE_RAKOFSKY/ICP_points"
+points_dir = "E:/agraham/ICP_points"
 # define the file to which icp observations are written
 if (EXTERNAL_POINTS == F){
   icp_points = paste(points_dir, '/', "step_", STEP, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')
@@ -178,7 +182,15 @@ crs(c.poly) = crs
 
 # return only the points which fall inside the convex hull estimate polygon
 Proj_gridpts = rgeos::gIntersection(Proj_gridpts, c.poly)
-Proj_gridpts = Proj_gridpts@coords
+
+if(EXTERNAL_BOUNDARY == T){
+  ext_bound = readOGR(EXTERNAL_BOUNDARY_FILE)
+  Proj_gridpts = rgeos::gIntersection(Proj_gridpts, ext_bound)
+  Proj_gridpts = Proj_gridpts@coords
+}
+if(EXTERNAL_BOUNDARY == F){
+  Proj_gridpts = Proj_gridpts@coords
+}
 
 # make function for writing output to log file in for each parallel
 # this allows us to keep adding to the csv while running in parallel with the 'foreach' package
