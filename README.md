@@ -8,7 +8,6 @@ James, Mike R., and Stuart Robson. 2014. “Mitigating Systematic Error in Topog
 
 ## Prerequisites 
 
-- R version 3.4.2 
 ### R packages 
 
 ```
@@ -54,8 +53,8 @@ loaded via a namespace (and not attached):
 [69] leaflet_2.0.2         tidyselect_0.2.5     
 ```        
 
-- CloudCompare version 2.10 or 2.11 alpha
-https://www.danielgm.net/cc/
+- [CloudCompare](https://www.danielgm.net/cc/) version 2.10 or 2.11 alpha
+
 
 # Usage
 
