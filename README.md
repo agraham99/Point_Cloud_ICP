@@ -61,5 +61,7 @@ https://www.danielgm.net/cc/
 
 ### ICP_moving_window.R
 
+![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)
+
 
 
