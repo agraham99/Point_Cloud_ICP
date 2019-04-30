@@ -28,12 +28,13 @@ library(foreach)
 library(concaveman)
 library(mapview)
 library(rgeos)
+library(rgdal)
 
 # location of the CloudCompare.exe
 CloudCompare = "C:/PROGRA~1/CloudCompare/CloudCompare.exe"
 
 # project coordinate system (Proj4txt)
-crs = "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
+crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 
 # ------------------------------------------------------------------
 # PARAMETERS (units = meters)
@@ -85,14 +86,14 @@ START_ROW = 1
 # INPUTS
 # DAP cloud, or cloud 'to be moved'
 # DAP_FULL.path = "H:/MKRF_ICP/DAP_Raw/GC"
-DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
-DAP_FULL.path = "H:/AFRF_ICP/DAP_Raw/ALPHA"
+# DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
+DAP_FULL.path = "D:/JOE_RAKOFSKY/DAP/raw"
 DAP_FULL = lidR::catalog(DAP_FULL.path)
 
 # ALS cloud, or reference cloud
 # ALS_FULL.path = "H:/MKRF_ICP/ALS_Raw/GC"
 # ALS_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/ALS/raw", pattern = '.laz', full.names = T)[1:1000])
-ALS_FULL.path = "H:/AFRF_ICP/ALS_Raw/ALPHA"
+ALS_FULL.path = "D:/JOE_RAKOFSKY/ALS/raw"
 ALS_FULL = lidR::catalog(ALS_FULL.path)
 
 # OUTPUTS
@@ -101,43 +102,61 @@ ALS_FULL = lidR::catalog(ALS_FULL.path)
 # 1. Original aligned and reference clouds clipped to each moving window bounding box
 # 2. The new aligned clouds for each moving window box
 # 3. Registeration matrix text file produced from the ICP procedure
-ICP_OUTPUT_DIR = 'H:/AFRF_ICP/ICP_temp_test'
+ICP_OUTPUT_DIR = 'D:/JOE_RAKOFSKY/ICP_temp_test_roads'
+
+# this is a predetermined set of points of interest where we want to perform the ICP estimations
+# For example: points along known roads, or areas where harvest has occurred 
+# use the T/F switch here to specify whether we are using an external points file
+EXTERNAL_POINTS = T
+EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
 
 # set a location for ICP observaion points output (csv file)
-points_dir = "H:/AFRF_ICP/ICP_points"
+points_dir = "D:/JOE_RAKOFSKY/ICP_points"
 # define the file to which icp observations are written
-icp_points = paste(points_dir, '/', "step_", STEP, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')
+if (EXTERNAL_POINTS == F){
+  icp_points = paste(points_dir, '/', "step_", STEP, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')
+  
+  # define the full extent objects for the las objects
+  # potential here to use las boundary or convex hull of points.... 
+  EXTENT_DAP = raster::extent(DAP_FULL)
+  EXTENT_ALS = raster::extent(ALS_FULL)
+  
+  # Start the process at the top left corner of extent of DAP or 'to be moved' point cloud
+  START_COORD = c(EXTENT_DAP@xmin, EXTENT_DAP@ymax)
+  
+  # create the grid of points, start with the bounding box of the 'to be moved' cloud
+  # this is essentially the same as just using the EXTENT_DAP object
+  Proj_bbox = owin(xrange = c(EXTENT_DAP@xmin, EXTENT_DAP@xmax),
+                   yrange = c(EXTENT_DAP@ymin, EXTENT_DAP@ymax))
+  
+  # define the number of points in the grid - for grid_centers
+  # divide by the STEP parameter to create the number of points needed
+  N_PTS_x = (EXTENT_DAP@xmax - EXTENT_DAP@xmin) / STEP
+  N_PTS_y = (EXTENT_DAP@ymax - EXTENT_DAP@ymin) / STEP
+  
+  # create the grid centers object
+  Proj_gridpts = data.frame(gridcenters(Proj_bbox, nx = round(N_PTS_x), ny = round(N_PTS_y)))
+  Proj_gridpts = SpatialPointsDataFrame(Proj_gridpts[,1:2], data = Proj_gridpts)
+  crs(Proj_gridpts) = crs
+}
+if (EXTERNAL_POINTS == T){
+  ext_fstub = gsub('.shp', '', basename(EXTERNAL_POINTS_FILE))
+  icp_points = paste(points_dir, '/', ext_fstub, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')
+  
+  Proj_gridpts = readOGR(EXTERNAL_POINTS_FILE)
+  crs(Proj_gridpts) = crs
+  Proj_gridpts$CID = seq(1, nrow(Proj_gridpts), 1)
+}
 
 # Write the header line
 # r1c1, r1c2, etc. are the values of the 3 by 4 transforamtion matrix resulting from each ICP instance in the moving window operation
 # where r refers to row and c refers to column
 # check if the file exists first as to not overwrite
 if (!file.exists(icp_points)){
-  writeLines(c("n, isnull, coverage, ICP, x, y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4"), icp_points)
+  writeLines(c("n, isnull, coverage, ICP, x, y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4,"), icp_points)
 }
 
-# define the full extent objects for the las objects
-# potential here to use las boundary or convex hull of points.... 
-EXTENT_DAP = raster::extent(DAP_FULL)
-EXTENT_ALS = raster::extent(ALS_FULL)
 
-# Start the process at the top left corner of extent of DAP or 'to be moved' point cloud
-START_COORD = c(EXTENT_DAP@xmin, EXTENT_DAP@ymax)
-
-# create the grid of points, start with the bounding box of the 'to be moved' cloud
-# this is essentially the same as just using the EXTENT_DAP object
-Proj_bbox = owin(xrange = c(EXTENT_DAP@xmin, EXTENT_DAP@xmax),
-                 yrange = c(EXTENT_DAP@ymin, EXTENT_DAP@ymax))
-
-# define the number of points in the grid - for grid_centers
-# divide by the STEP parameter to create the number of points needed
-N_PTS_x = (EXTENT_DAP@xmax - EXTENT_DAP@xmin) / STEP
-N_PTS_y = (EXTENT_DAP@ymax - EXTENT_DAP@ymin) / STEP
-
-# create the grid centers object
-Proj_gridpts = data.frame(gridcenters(Proj_bbox, nx = round(N_PTS_x), ny = round(N_PTS_y)))
-Proj_gridpts = SpatialPointsDataFrame(Proj_gridpts[,1:2], data = Proj_gridpts)
-crs(Proj_gridpts) = crs
 
 # rough estimate of convex hull of the DAP points
 # this reduces the number of potential ICP runs by limiting the initial extent of the project closer to the boundary of 
