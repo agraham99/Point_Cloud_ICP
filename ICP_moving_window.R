@@ -56,7 +56,7 @@ SMALL_TILE_BUFFER = 0
 
 # subsample and ICP parameters
 # SUBSAMPLE_DISTANCE: minimum distance between points for point cloud to be processed in ICP 
-SUBSAMPLE_DISTANCE = 0.3
+SUBSAMPLE_DISTANCE = 0.5
 # RANDOM_SAMPLE_LIMIT: limit of number of points to randomly sample for RMS calcuation for ICP at each iteration
 RANDOM_SAMPLE_LIMIT = 25000
 # ICP_OVERLAP: estimated overlap (%) between the 2 point clouds in each window after ICP
@@ -161,7 +161,6 @@ if (!file.exists(icp_points)){
 }
 
 
-
 # rough estimate of convex hull of the DAP points
 # this reduces the number of potential ICP runs by limiting the initial extent of the project closer to the boundary of 
 # the DAP points as opposed to the bounding box
@@ -185,6 +184,7 @@ Proj_gridpts = rgeos::gIntersection(Proj_gridpts, c.poly)
 
 if(EXTERNAL_BOUNDARY == T){
   ext_bound = readOGR(EXTERNAL_BOUNDARY_FILE)
+  crs(ext_bound) = crs
   Proj_gridpts = rgeos::gIntersection(Proj_gridpts, ext_bound)
   Proj_gridpts = Proj_gridpts@coords
 }
@@ -346,7 +346,7 @@ Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
     GS_Y = GLOBAL_SHIFT_Y
     GS_Z = GLOBAL_SHIFT_Z
   }
-  else{
+  if (GLOBAL_SHIFT_AUTO == T){
     GS_X = 'AUTO'
     GS_Y = ''
     GS_Z = ''
@@ -386,7 +386,7 @@ Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
   system(ss_command)
   
   
-  ss_command = c('CloudCompare',
+  ss_command = c(CloudCompare,
                  '-SILENT',
                  '-C_EXPORT_FMT',
                  'LAS',
@@ -619,9 +619,9 @@ toc()
 stopCluster(cl)
 
 # for testing in non-parallel
-# for (i in 1:nrow(Proj_gridpts)){
-#   Moving_Window_ICP(i)
-# }
+for (i in 1:nrow(Proj_gridpts)){
+  Moving_Window_ICP(i)
+}
 
 
 
