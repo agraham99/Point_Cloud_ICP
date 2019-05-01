@@ -48,7 +48,7 @@ WIN_SIZE = 25
 # CANOPY_ONLY: Boolean of whether to use only top of canopy points
 CANOPY_ONLY = T
 # SMALL_TILE_CORES: number of corse to use (LAScatalog) for picking out canopy points
-SMALL_TILE_CORES = 2
+SMALL_TILE_CORES = 6
 # SMALL_TILE_WINDOW: window size or gridcell size to designate canopy points
 SMALL_TILE_WINDOW = 1
 # SMALL_TILE_BUFFER: optional buffer for small window size
@@ -76,7 +76,7 @@ GLOBAL_SHIFT_Z = 0
 
 # parallel clusters to run
 # N_CLUSTERS: number of processes to run in parallel using the doParallel and foreach packages
-N_CLUSTERS = 12
+N_CLUSTERS = 16
 
 # start row for points
 # START_ROW: if processing from scratch, should be = 1
@@ -621,9 +621,9 @@ toc()
 stopCluster(cl)
 
 # for testing in non-parallel
-# for (i in 1:nrow(Proj_gridpts)){
-#   Moving_Window_ICP(i)
-# }
+for (i in 1:nrow(Proj_gridpts)){
+  Moving_Window_ICP(i)
+}
 
 
 
