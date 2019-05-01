@@ -54,7 +54,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # n, isnull, coverage,   ICP,        x,          y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4
 # where 'r' and 'c' refer to row and column of the ICP transformation matrix
 # points.f = paste0("<path to the csv file of ICP observation points created using ICP_moving_window.R>")
-points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
+points.f = paste0("E:/agraham/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
 # remove duplicated rows... can happen if processing was stopped and started

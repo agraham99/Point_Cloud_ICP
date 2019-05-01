@@ -40,15 +40,15 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # PARAMETERS (units = meters)
 # STEP: distance between the center of 2 adjacent moving windows
 # STEP parameter does not apply when using external points - see below
-STEP = 50
+STEP = 150
 # WIN_SIZE: width of square moving window
-WIN_SIZE = 30
+WIN_SIZE = 25
 
 # canopy parameters
 # CANOPY_ONLY: Boolean of whether to use only top of canopy points
-CANOPY_ONLY = F
+CANOPY_ONLY = T
 # SMALL_TILE_CORES: number of corse to use (LAScatalog) for picking out canopy points
-SMALL_TILE_CORES = 4
+SMALL_TILE_CORES = 2
 # SMALL_TILE_WINDOW: window size or gridcell size to designate canopy points
 SMALL_TILE_WINDOW = 1
 # SMALL_TILE_BUFFER: optional buffer for small window size
@@ -76,7 +76,7 @@ GLOBAL_SHIFT_Z = 0
 
 # parallel clusters to run
 # N_CLUSTERS: number of processes to run in parallel using the doParallel and foreach packages
-N_CLUSTERS = 24
+N_CLUSTERS = 12
 
 # start row for points
 # START_ROW: if processing from scratch, should be = 1
@@ -103,12 +103,15 @@ ALS_FULL = lidR::catalog(ALS_FULL.path)
 # 1. Original aligned and reference clouds clipped to each moving window bounding box
 # 2. The new aligned clouds for each moving window box
 # 3. Registeration matrix text file produced from the ICP procedure
-ICP_OUTPUT_DIR = 'E:/agraham/ICP_temp_test_roads'
+ICP_OUTPUT_DIR = paste0('E:/agraham/ICP_temp', "step_", STEP, '_win_', WIN_SIZE, '_canopy_', CANOPY_ONLY)
+if (!dir.exists(ICP_OUTPUT_DIR)){
+  dir.create(ICP_OUTPUT_DIR)
+}
 
 # this is a predetermined set of points of interest where we want to perform the ICP estimations
 # For example: points along known roads, or areas where harvest has occurred 
 # use the T/F switch here to specify whether we are using an external points file
-EXTERNAL_POINTS = T
+EXTERNAL_POINTS = F
 EXTERNAL_POINTS_FILE = 'E:/agraham/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
 
 EXTERNAL_BOUNDARY = T
@@ -160,35 +163,34 @@ if (!file.exists(icp_points)){
   writeLines(c("n, isnull, coverage, ICP, x, y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4,"), icp_points)
 }
 
-
-# rough estimate of convex hull of the DAP points
-# this reduces the number of potential ICP runs by limiting the initial extent of the project closer to the boundary of 
-# the DAP points as opposed to the bounding box
-# take systematic sample (regular grid) or 10000 points
-sample_pts = spsample(as.spatial(DAP_FULL), n = 10000, type = "regular")
-# get the concave boundary of the points
-# higher concavity argument value means more complex polygon
-c = concaveman(sample_pts@coords, concavity = 10000, length_threshold = 5)
-c.poly = as.data.frame(c)
-# give all points an ID vlalue of 1 for single polygon
-c.poly$ID = 1
-# convert the outer points to polygon
-c.poly = coords2Polygons(c[,1:2], ID = 'ID')
-# buffer the polygon by the step width to ensure full coverage of the DAP
-c.poly = buffer(c.poly, width = STEP)
-# assign the coordinate system
-crs(c.poly) = crs
-
-# return only the points which fall inside the convex hull estimate polygon
-Proj_gridpts = rgeos::gIntersection(Proj_gridpts, c.poly)
-
 if(EXTERNAL_BOUNDARY == T){
   ext_bound = readOGR(EXTERNAL_BOUNDARY_FILE)
+  ext_bound = rgeos::gBuffer(ext_bound, width = 1000)
   crs(ext_bound) = crs
   Proj_gridpts = rgeos::gIntersection(Proj_gridpts, ext_bound)
   Proj_gridpts = Proj_gridpts@coords
 }
 if(EXTERNAL_BOUNDARY == F){
+  # rough estimate of convex hull of the DAP points
+  # this reduces the number of potential ICP runs by limiting the initial extent of the project closer to the boundary of 
+  # the DAP points as opposed to the bounding box
+  # take systematic sample (regular grid) or 10000 points
+  sample_pts = spsample(as.spatial(DAP_FULL), n = 10000, type = "regular")
+  # get the concave boundary of the points
+  # higher concavity argument value means more complex polygon
+  c = concaveman(sample_pts@coords, concavity = 10000, length_threshold = 5)
+  c.poly = as.data.frame(c)
+  # give all points an ID vlalue of 1 for single polygon
+  c.poly$ID = 1
+  # convert the outer points to polygon
+  c.poly = coords2Polygons(c[,1:2], ID = 'ID')
+  # buffer the polygon by the step width to ensure full coverage of the DAP
+  c.poly = buffer(c.poly, width = STEP)
+  # assign the coordinate system
+  crs(c.poly) = crs
+  
+  # return only the points which fall inside the convex hull estimate polygon
+  Proj_gridpts = rgeos::gIntersection(Proj_gridpts, c.poly)
   Proj_gridpts = Proj_gridpts@coords
 }
 
@@ -619,9 +621,9 @@ toc()
 stopCluster(cl)
 
 # for testing in non-parallel
-for (i in 1:nrow(Proj_gridpts)){
-  Moving_Window_ICP(i)
-}
+# for (i in 1:nrow(Proj_gridpts)){
+#   Moving_Window_ICP(i)
+# }
 
 
 
