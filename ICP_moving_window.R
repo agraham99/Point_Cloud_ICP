@@ -42,15 +42,15 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # STEP parameter does not apply when using external points - see below
 STEP = 150
 # WIN_SIZE: width of square moving window
-WIN_SIZE = 25
+WIN_SIZE = 30
 
 # canopy parameters
 # CANOPY_ONLY: Boolean of whether to use only top of canopy points
 CANOPY_ONLY = T
 # SMALL_TILE_CORES: number of corse to use (LAScatalog) for picking out canopy points
-SMALL_TILE_CORES = 6
+SMALL_TILE_CORES = 4
 # SMALL_TILE_WINDOW: window size or gridcell size to designate canopy points
-SMALL_TILE_WINDOW = 1
+SMALL_TILE_WINDOW = 2
 # SMALL_TILE_BUFFER: optional buffer for small window size
 SMALL_TILE_BUFFER = 0
 
@@ -457,7 +457,7 @@ Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
     for (f in small_cells_DAP){
       las = readLAS(f)
       # get the highest point in each tile
-      las = lasfilter(las, Z == max(Z))
+      las = lasfilter(las, Z >= quantile(Z, 0.95))
       # there will be new files with each only one point
       writeLAS(las, f)
     }
@@ -492,9 +492,10 @@ Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
     newctg_ALS = catalog_retile(ALS_TILE.canopy)
     
     small_cells_ALS = list.files(ALS_cdir, full.names = T)
+    # small_cells_ALS = small_cells_ALS[1:100]
     for (f in small_cells_ALS){
       las = readLAS(f)
-      las = lasfilter(las, Z == max(Z))
+      las = lasfilter(las, Z >= quantile(Z, 0.95))
       writeLAS(las, f)
     }
     
@@ -621,9 +622,9 @@ toc()
 stopCluster(cl)
 
 # for testing in non-parallel
-for (i in 1:nrow(Proj_gridpts)){
-  Moving_Window_ICP(i)
-}
+# for (i in 1:nrow(Proj_gridpts)){
+#   Moving_Window_ICP(i)
+# }
 
 
 
