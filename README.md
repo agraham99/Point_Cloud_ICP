@@ -92,6 +92,16 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 **ICP_OVERLAP**: estimated final 2-dimensional top down view overlap between the two clouds after running ICP
 
+**GLOBAL_SHIFT_AUTO**: Boolean (T/F) whether or not to let CloudCompare automatically apply constant transformation for handling large coordinates 
+
+**GLOBAL_SHIFT_X**: manually set X, Y and Z global shift offset for local coorindate system in CloudCompare
+**GLOBAL_SHIFT_Y**
+**GLOBAL_SHIFT_Z**
+
+**N_CLUSTERS**: number of clusters to run in parallel using doParallel and foreach packages in R
+
+**START_ROW**: if processing from scratch, should be set to 1.  Otherwise can be manually set if restarting an already partially processed dataset
+
 
 
 
