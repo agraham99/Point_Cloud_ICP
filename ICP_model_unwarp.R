@@ -54,7 +54,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # n, isnull, coverage,   ICP,        x,          y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4
 # where 'r' and 'c' refer to row and column of the ICP transformation matrix
 # points.f = paste0("<path to the csv file of ICP observation points created using ICP_moving_window.R>")
-points.f = paste0("E:/agraham/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
+points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_30_canopy_TRUE_icp_obs.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
 # remove duplicated rows... can happen if processing was stopped and started
@@ -166,26 +166,26 @@ spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
 
 # write the shp file of the subset of points
 f = gsub('.csv', '.shp', basename(points.f))
-writeOGR(p, paste("E:/agraham/shp/", f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
+writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/", f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
 
 # ------------------------------------------------------------------
 # MAKE SPATIAL PLOTS of the observed shifts IN A LOOP
 # empty list to populate with spplot objects
-plots = list()
-i = 0
-for (trans in c('x_trans', 'y_trans', 'z_trans')){
-  i = i+1
-  
-  # run this block alone for 
-  n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
-  cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
-  cuts.p = round(cuts.p,1)
-  plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans)
-  
-  plots[[i]] = plot
-}
-# arrange the plots for display
-do.call(grid.arrange, plots)
+# plots = list()
+# i = 0
+# for (trans in c('x_trans', 'y_trans', 'z_trans')){
+#   i = i+1
+#   
+#   # run this block alone for 
+#   n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
+#   cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
+#   cuts.p = round(cuts.p,1)
+#   plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans)
+#   
+#   plots[[i]] = plot
+# }
+# # arrange the plots for display
+# do.call(grid.arrange, plots)
 
 
 # ------------------------------------------------------------------
@@ -204,10 +204,10 @@ z.offset = p$z_trans
 # change the y argument and model for X, Y or Z offsets
 
 # plot the shifts as a function of x or y direction
-# ggp = ggplot()
-# ggp = ggp + geom_point(aes(x = x, y = z.offset), alpha = 0.1)
-# ggp = ggp + geom_smooth(aes(x = x, y = z.offset))
-# ggp
+ggp = ggplot()
+ggp = ggp + geom_point(aes(x = y, y = z.offset), alpha = 0.1)
+ggp = ggp + geom_smooth(aes(x = y, y = z.offset))
+ggp
 
 
 # ------------------------------------------------------------------
@@ -547,15 +547,15 @@ lasshift.LAScatalog = function(las, ...)
 
 
 # path to original clouds
-# laslist = list.files("E:/agraham/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
+# laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
 # laslist = sample(laslist, 200)
                      
-ctg = catalog("E:/agraham/DAP_raw")
+ctg = catalog("D:/JOE_RAKOFSKY/DAP_raw")
 # set the tile width for processing
 opt_chunk_size(ctg) <- 100
 opt_laz_compression(ctg) <- TRUE
 # path and name for unwarped outputs
-opt_output_files(ctg) <- paste0("E:/agraham/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", "unwarped_{ID}")
+opt_output_files(ctg) <- paste0("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", "unwarped_{ID}")
 # run the unwarping process
 new_ctg = lasshift(ctg)
 
@@ -588,14 +588,14 @@ model_shift = function(lasfile)
   # las$Y = las$Y + yshift
   las$Z = las$Z + zshift
   
-  lasfilename = paste0("E:/agraham/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", gsub(".las", '', basename(lasfile)), '_unwarp.laz')
+  lasfilename = paste0("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", gsub(".las", '', basename(lasfile)), '_unwarp.laz')
   
   writeLAS(las, lasfilename)
 }
 
 
 # path to original clouds
-laslist = list.files("E:/agraham/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
+laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
 laslist = sample(laslist, 200)
 
 library(doParallel)
@@ -634,7 +634,7 @@ stopCluster(cl)
 # yet another way to apply the shifting according to the model using a simple for loop
 
 # simple loop to carry out model applied shifting
-laslist = list.files("E:/agraham/DAP_raw", pattern = '.laz', full.names = T)
+laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw", pattern = '.laz', full.names = T)
 for (lasfile in laslist){
   model_shift(lasfile)
 }
@@ -645,11 +645,11 @@ for (lasfile in laslist){
 
 
 # path to original clouds
-laslist = list.files("E:/agraham/DAP_raw", pattern = ".laz", full.names = T)
+laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw", pattern = ".laz", full.names = T)
 laslist = sample(laslist, 20)
 
 
-als = lidR::catalog("E:/agraham/ALS_raw")
+als = lidR::catalog("D:/JOE_RAKOFSKY/ALS_raw")
 als.e = extent(als)
 als.e = as(als.e, 'SpatialPolygons')
 for (lasfile in laslist){
@@ -665,7 +665,7 @@ for (lasfile in laslist){
     ytop = ext[2,2]
     als.clip = lasclipRectangle(als, xleft = xleft, ybottom = ybot, xright = xright, ytop = ytop)
     
-    als.clip.f = paste0("E:/agraham/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full_checks", '/', 'ALS_', basename(lasfile))
+    als.clip.f = paste0("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full_checks", '/', 'ALS_', basename(lasfile))
     
     writeLAS(als.clip, als.clip.f)
   }
@@ -747,16 +747,16 @@ transects.sppoly = SpatialPolygons(Polygons_list)
 transects.spdf = SpatialPolygonsDataFrame(transects.sppoly, data = df)
 crs(transects.spdf) = "+init=epsg:32611 +proj=utm +zone=11 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 "
 
-f = "E:/agraham/check_sample_shp/all_check_transects.shp"
+f = "D:/JOE_RAKOFSKY/check_sample_shp/all_check_transects.shp"
 writeOGR(transects.spdf, f, layer = 'all_transects', driver = 'ESRI Shapefile', overwrite_layer = T)
 
 
 # make las trasnects
 library(lidR)
 
-dap = lidR::catalog("E:/agraham/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full")
-als = lidR::catalog("E:/agraham/ALS_raw")
-dap.raw = lidR::catalog("E:/agraham/DAP_raw")
+dap = lidR::catalog("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full")
+als = lidR::catalog("D:/JOE_RAKOFSKY/ALS_raw")
+dap.raw = lidR::catalog("D:/JOE_RAKOFSKY/DAP_raw")
 
 for (i in 1:nrow(transects.spdf)){
   
@@ -769,9 +769,9 @@ for (i in 1:nrow(transects.spdf)){
     tr.als = lasclip(als, tr)
     tr.dap.raw = lasclip(dap.raw, tr)
     
-    writeLAS(tr.dap, paste0('E:/agraham/check_las/dap_', i, '.las'))
-    writeLAS(tr.als, paste0('E:/agraham/check_las/als_', i, '.las'))
-    writeLAS(tr.dap.raw, paste0('E:/agraham/check_las/dap_raw_', i, '.las'))
+    writeLAS(tr.dap, paste0('D:/JOE_RAKOFSKY/check_las/dap_', i, '.las'))
+    writeLAS(tr.als, paste0('D:/JOE_RAKOFSKY/check_las/als_', i, '.las'))
+    writeLAS(tr.dap.raw, paste0('D:/JOE_RAKOFSKY/check_las/dap_raw_', i, '.las'))
   }
  
 }

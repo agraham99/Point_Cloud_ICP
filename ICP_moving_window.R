@@ -76,25 +76,25 @@ GLOBAL_SHIFT_Z = 0
 
 # parallel clusters to run
 # N_CLUSTERS: number of processes to run in parallel using the doParallel and foreach packages
-N_CLUSTERS = 16
+N_CLUSTERS = 8
 
 # start row for points
 # START_ROW: if processing from scratch, should be = 1
 # otherwise if you are picking up a partially processed dataset, can specify a row to begin from
 # Existing rows in the csv will skipped
-START_ROW = 1
+START_ROW = 26260
 
 # INPUTS
 # DAP cloud, or cloud 'to be moved'
 # DAP_FULL.path = "H:/MKRF_ICP/DAP_Raw/GC"
-# DAP_FULL.path = as.vector(list.files("E:/agraham/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
-DAP_FULL.path = "E:/agraham/DAP_raw_rembuf"
+# DAP_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/DAP/raw", pattern = '.laz', full.names = T)[1:1000])
+DAP_FULL.path = "D:/JOE_RAKOFSKY/DAP_raw_rembuf"
 DAP_FULL = lidR::catalog(DAP_FULL.path)
 
 # ALS cloud, or reference cloud
 # ALS_FULL.path = "H:/MKRF_ICP/ALS_Raw/GC"
-# ALS_FULL.path = as.vector(list.files("E:/agraham/ALS/raw", pattern = '.laz', full.names = T)[1:1000])
-ALS_FULL.path = "E:/agraham/ALS_raw"
+# ALS_FULL.path = as.vector(list.files("D:/JOE_RAKOFSKY/ALS/raw", pattern = '.laz', full.names = T)[1:1000])
+ALS_FULL.path = "D:/JOE_RAKOFSKY/ALS/raw"
 ALS_FULL = lidR::catalog(ALS_FULL.path)
 
 # OUTPUTS
@@ -103,7 +103,7 @@ ALS_FULL = lidR::catalog(ALS_FULL.path)
 # 1. Original aligned and reference clouds clipped to each moving window bounding box
 # 2. The new aligned clouds for each moving window box
 # 3. Registeration matrix text file produced from the ICP procedure
-ICP_OUTPUT_DIR = paste0('E:/agraham/ICP_temp', "step_", STEP, '_win_', WIN_SIZE, '_canopy_', CANOPY_ONLY)
+ICP_OUTPUT_DIR = paste0('D:/JOE_RAKOFSKY/ICP_temp', "_step_", STEP, '_win_', WIN_SIZE, '_canopy_', CANOPY_ONLY)
 if (!dir.exists(ICP_OUTPUT_DIR)){
   dir.create(ICP_OUTPUT_DIR)
 }
@@ -112,13 +112,13 @@ if (!dir.exists(ICP_OUTPUT_DIR)){
 # For example: points along known roads, or areas where harvest has occurred 
 # use the T/F switch here to specify whether we are using an external points file
 EXTERNAL_POINTS = F
-EXTERNAL_POINTS_FILE = 'E:/agraham/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
+EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
 
 EXTERNAL_BOUNDARY = T
-EXTERNAL_BOUNDARY_FILE = "E:/agraham/SL_subset/SL_subset.shp"
+EXTERNAL_BOUNDARY_FILE = "D:/JOE_RAKOFSKY/SL_subset/SL_subset.shp"
 
 # set a location for ICP observaion points output (csv file)
-points_dir = "E:/agraham/ICP_points"
+points_dir = "D:/JOE_RAKOFSKY/ICP_points"
 # define the file to which icp observations are written
 if (EXTERNAL_POINTS == F){
   icp_points = paste(points_dir, '/', "step_", STEP, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')

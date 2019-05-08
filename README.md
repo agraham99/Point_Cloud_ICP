@@ -70,7 +70,7 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 **CloudCompare**: path to the locally installed CloudCompare.exe for interfacing the commandline version
 
-**crs**: Coordinate System in Proj4text form
+**crs**: Coordinate System in Proj4txt form
 
 
 **STEP**: desired distance in meters between moving window centers (ICP observation points)
@@ -86,6 +86,11 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 **SMALL_TILE_BUFFER**: optional buffer for small window size
 
+**SUBSAMPLE_DISTANCE**: minimum distance between points of both data and reference point clouds to subsample to before running the ICP
+
+**RANDOM_SAMPLE_LIMIT**: maximum number of points randomly sampled and used in the RMS calculation for the ICP procedure
+
+**ICP_OVERLAP**: estimated final 2-dimensional top down view overlap between the two clouds after running ICP
 
 
 
