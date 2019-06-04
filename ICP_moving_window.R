@@ -82,7 +82,7 @@ N_CLUSTERS = 8
 # START_ROW: if processing from scratch, should be = 1
 # otherwise if you are picking up a partially processed dataset, can specify a row to begin from
 # Existing rows in the csv will skipped
-START_ROW = 26260
+START_ROW = 26670
 
 # INPUTS
 # DAP cloud, or cloud 'to be moved'

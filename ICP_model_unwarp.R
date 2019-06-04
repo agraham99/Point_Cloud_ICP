@@ -57,12 +57,16 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_30_canopy_TRUE_icp_obs.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
+
+ext.points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
+ext.points.df = read.csv(ext.points.f, header = T, stringsAsFactors = F)
 # remove duplicated rows... can happen if processing was stopped and started
 # points.df = points.df[!duplicated(points.df$row.names),]
 # Make sure the column names of the points table looks like the following
 # names(points.df) = c("n", "isnull", "coverage", "ICP", "x", "y", "RMS", "r1c1", "r2c1", "r3c1", "r1c2", "r2c2", "r3c2", "r1c3", "r2c3", "r3c3", "r1c4", "r2c4", "r3c4", "--")
 # Rewrite the points file if corrected here
 # write.csv(points.df, file = points.f,  row.names = F)
+points.df = rbind(points.df, ext.points.df)
 
 # all points where ICP was run and therefore RMS is not NA
 # store as a seperate variable (pts) incase we want to see these points
@@ -97,12 +101,12 @@ proj4string(p) = crs
 # threhsolds to isolate "valid" icp results
 # thr.rotation a quantile value where only points greater than the threshold are selected
 # thr.RMS is a quantile value where only points below the threhsold are selected
-thr.rotation = 0.5
-thr.RMS = 0.75
+thr.rotation = 0.75
+thr.RMS = 0.3
 
 # thr.xtrans has min and max to cut off tails of the distribution 
 # specify the quantile threhsold for two tail exclusion
-alpha = 0.05
+alpha = 0.1
 
 tail_min = alpha
 tail_max = 1 - alpha
@@ -124,11 +128,11 @@ p = subset(p, r1c1 > quantile(r1c1, thr.rotation) &
              # filter the x and y translation low values
              x_trans > quantile(x_trans, thr.xtrans.min) &
              y_trans > quantile(y_trans, thr.ytrans.min) &
-             z_trans > quantile(z_trans, thr.ztrans.min) &
+             # z_trans > quantile(z_trans, thr.ztrans.min) &
              # filter the x and y translation high values
              x_trans < quantile(x_trans, thr.xtrans.max) &
-             y_trans < quantile(y_trans, thr.ytrans.max) &
-             z_trans < quantile(z_trans, thr.ztrans.max))
+             y_trans < quantile(y_trans, thr.ytrans.max))
+             # z_trans < quantile(z_trans, thr.ztrans.max))
 
 # ------------------------------------------------------------------
 # HISTOGRAMS of matrix values
@@ -159,7 +163,7 @@ hist(p$z_trans, b)
 # spatial plot of matrix results
 # use trans = 'x_trans' or 'y_trans' for other directions
 trans = 'z_trans'
-n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 4))
+n = abs(round((max(p[[trans]]) - min(p[[trans]]))/41, 4))
 cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
 cuts.p = round(cuts.p,4)
 spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
@@ -300,6 +304,11 @@ confint(icp.lm.x, level=0.999)
 confint(icp.lm.y, level=0.999)
 confint(icp.lm.z, level=0.999)
 
+# add the RMSE
+RSS <- c(crossprod(icp.lm.z$residuals))
+MSE <- RSS / length(icp.lm.z$residuals)
+RMSE <- sqrt(MSE)
+
 # bind the residuals from the model to tthe original points table
 p = cbind(p, icp.lm.x$residuals)
 names(p)[length(names(p))] = 'Xresidual'
@@ -319,7 +328,10 @@ cuts.p = round(cuts.p,4)
 spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
 
 f = gsub('.csv', '.shp', basename(points.f))
-writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/2232c/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
+# writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
+# write.csv(p@data,paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', basename(points.f), sep = ''))
+
+
 
 # PLOTTING 1 to 1 for observed vs predicted manually
 # --------------------------------------------------------------------
@@ -450,38 +462,37 @@ scatter2 <- function (x, y, R2=T, by = NULL, axisorder = "PO", xlab = "Observed"
 }
 
 # example of using the 1 to 1 scatter plot
-scatter2(x = z.offset, y = icp.lm.z$fitted.values)
+# scatter2(x = z.offset, y = icp.lm.z$fitted.values)
 
 
 
-# arrange plots of the offsets in each direction (6 plots)
-library(ggpubr)
-
-ggp.list = list()
-
-ggp.offset = function(offset, d, label){
-  ggp = ggplot()
-  ggp = ggp + geom_point(aes(x = d, y = offset), alpha = 0.1)
-  ggp = ggp + geom_smooth(aes(x = d, y = offset))
-  ggp = ggp + ggtitle(label)
-  ggp
-}
-
-ggp.list[[1]] = ggp.offset(offset = p$x_trans, d = p$x, label = 'X_shift vs UTM X')
-ggp.list[[2]] = ggp.offset(offset = p$y_trans, d = p$x, label = 'Y_shift vs UTM X')
-ggp.list[[3]] = ggp.offset(offset = p$z_trans, d = p$x, label = 'Z_shift vs UTM X')
-
-ggp.list[[4]] = ggp.offset(offset = p$x_trans, d = p$y, label = 'X_shift vs UTM Y')
-ggp.list[[5]] = ggp.offset(offset = p$y_trans, d = p$y, label = 'Y_shift vs UTM Y')
-ggp.list[[6]] = ggp.offset(offset = p$z_trans, d = p$y, label = 'Z_shift vs UTM Y')
-
-ggpubr::ggarrange(plotlist = ggp.list, ncol = 3, nrow = 2)
+# # arrange plots of the offsets in each direction (6 plots)
+# library(ggpubr)
+# 
+# ggp.list = list()
+# 
+# ggp.offset = function(offset, d, label){
+#   ggp = ggplot()
+#   ggp = ggp + geom_point(aes(x = d, y = offset), alpha = 0.1)
+#   ggp = ggp + geom_smooth(aes(x = d, y = offset))
+#   ggp = ggp + ggtitle(label)
+#   ggp
+# }
+# 
+# ggp.list[[1]] = ggp.offset(offset = p$x_trans, d = p$x, label = 'X_shift vs UTM X')
+# ggp.list[[2]] = ggp.offset(offset = p$y_trans, d = p$x, label = 'Y_shift vs UTM X')
+# ggp.list[[3]] = ggp.offset(offset = p$z_trans, d = p$x, label = 'Z_shift vs UTM X')
+# 
+# ggp.list[[4]] = ggp.offset(offset = p$x_trans, d = p$y, label = 'X_shift vs UTM Y')
+# ggp.list[[5]] = ggp.offset(offset = p$y_trans, d = p$y, label = 'Y_shift vs UTM Y')
+# ggp.list[[6]] = ggp.offset(offset = p$z_trans, d = p$y, label = 'Z_shift vs UTM Y')
+# 
+# ggpubr::ggarrange(plotlist = ggp.list, ncol = 3, nrow = 2)
 
 # ----------------------------------------------------------------
 # IMPLEMENT THE MODELS TO UNWARP ORIGINAL CLOUDS
 # this sections uses the LASCatalog processing engine to apply the models to every point of the original point cloud
 
-tic('catalog_apply unwarping cloud')
 
 # define the function name to run
 lasshift = function(las, ...)
@@ -532,7 +543,7 @@ lasshift.LAScatalog = function(las, ...)
   # Force some options
   
   # wildcard to gather all files in the directory
-  opt_select(las) <-  "*.laz" 
+  opt_select(las) <-  "*.las" 
   # apply buffer
   opt_chunk_buffer(las) <- 0
   # force the need for an output file
@@ -549,14 +560,62 @@ lasshift.LAScatalog = function(las, ...)
 # path to original clouds
 # laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
 # laslist = sample(laslist, 200)
-                     
-ctg = catalog("D:/JOE_RAKOFSKY/DAP_raw")
+
+
+# make the subset of files for the smaller slave lake area
+ctg.files = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf", pattern = '.laz', full.names = T)
+SL_subset = readOGR('D:/JOE_RAKOFSKY/SL_subset/SL_subset.shp')
+
+chunks = 500
+for (i in 1:chunks){
+  if (i == 1){
+    start = 1
+    end = length(ctg.files)/chunks
+  }
+  else{
+    start = start + length(ctg.files)/chunks
+    end = start + length(ctg.files)/chunks
+  }
+  start = round(start)
+  end = round(end+1)
+  print(paste('chunk', i, 'start', start , 'end', end, sep = ' '))
+
+  ctg = lidR::catalog(ctg.files[start:end])
+  crs(SL_subset) = crs(ctg)
+  opt_output_files(ctg) = paste0("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset/", i, "_subset_{ID}")
+  gint = gIntersection(as.spatial(ctg), SL_subset)
+
+  if (is.null(gint)){
+    gint = F
+  } else {
+    gint = T
+  }
+
+  if (gint == T){
+    print('intersection')
+    l = lasclip(ctg, SL_subset)
+  }
+}
+
+# -------------------------------
+
+
+
+
+
 # set the tile width for processing
-opt_chunk_size(ctg) <- 100
+
+ctg = catalog("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset")
+
+opt_chunk_size(ctg) <- 1000
 opt_laz_compression(ctg) <- TRUE
+# opt_cores(ctg) = 4
 # path and name for unwarped outputs
-opt_output_files(ctg) <- paste0("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", "unwarped_{ID}")
+opt_output_files(ctg) <- paste0("D:/JOE_RAKOFSKY/unwarp/sl_subset/roads_and_DSM/", "unwarped_{ID}")
 # run the unwarping process
+
+tic('catalog_apply unwarping cloud')
+
 new_ctg = lasshift(ctg)
 
 # measure the time of completion for the process
@@ -570,40 +629,42 @@ toc()
 # is not continuous coverage, ie tiles with large spaces between tiles.
 
 
-model_shift = function(lasfile)
+model_shift = function(i)
 {
-  las = readLAS(lasfile)
-  
-  # dataframe containing the x and y coords of the original cloud
-  g = data.frame(list(las$X, las$Y))
-  names(g) = c('x', 'y')
-  
-  # predict the shifts
-  # xshift = predict(icp.lm.x, newdata = g)
-  # yshift = predict(icp.lm.y, newdata = g)
-  zshift = stats::predict(icp.lm.z, newdata = g)
-  
-  # apply the shift values 
-  # las$X = las$X + xshift
-  # las$Y = las$Y + yshift
-  las$Z = las$Z + zshift
-  
-  lasfilename = paste0("D:/JOE_RAKOFSKY/DAP_unwarp_test/step_500_win_30_canopyonly_TRUE_icp_obs_full/", gsub(".las", '', basename(lasfile)), '_unwarp.laz')
-  
-  writeLAS(las, lasfilename)
+  lasfile = laslist[i]
+  lasfilename = paste0("D:/JOE_RAKOFSKY/unwarp/sl_subset/roads_and_DSM/", gsub(".las", '', basename(lasfile)), '_unwarp.laz')
+  if (!file.exists(lasfilename)){
+    las = readLAS(lasfile)
+    
+    # dataframe containing the x and y coords of the original cloud
+    g = data.frame(list(las$X, las$Y))
+    names(g) = c('x', 'y')
+    
+    # predict the shifts
+    # xshift = predict(icp.lm.x, newdata = g)
+    # yshift = predict(icp.lm.y, newdata = g)
+    zshift = stats::predict(icp.lm.z, newdata = g)
+    
+    # apply the shift values 
+    # las$X = las$X + xshift
+    # las$Y = las$Y + yshift
+    las$Z = las$Z + zshift
+    
+    writeLAS(las, lasfilename)
+  }else{
+    print('file exists...')
+  }
 }
 
-
 # path to original clouds
-laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
-laslist = sample(laslist, 200)
+laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset", pattern = '.las', full.names = T)
+# laslist = sample(laslist, 200)
 
 library(doParallel)
+library(doSNOW)
 library(foreach)
 
-
-
-N_CLUSTERS = 6
+N_CLUSTERS = 4
 # make cluster of set number of workers
 cl = makeCluster(N_CLUSTERS)
 # register cluster
@@ -617,11 +678,12 @@ tic('ICP foreach')
 # make sure to pass the necessary packages to the clusters
 # if 'start' = 1 then we start at the beginning of the points and go sequentially
 # this depends on how the points are ordered in Proj_gridpts
-foreach (i = 1:length(laslist),
-         .packages = c("lidR"),
-         .export = c('icp.lm.z')) %dopar% {
-                         lasfile = laslist[i]
-                         model_shift(lasfile)
+foreach (i = 1:(length(laslist)-100),
+         .packages = c("lidR", "stats"),
+         .export = c('laslist'),
+         .verbose = T) %dopar% {
+                        
+                         model_shift(i)
                          
                        }
 # gives us the end time of whole process
@@ -634,10 +696,11 @@ stopCluster(cl)
 # yet another way to apply the shifting according to the model using a simple for loop
 
 # simple loop to carry out model applied shifting
-laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw", pattern = '.laz', full.names = T)
-for (lasfile in laslist){
-  model_shift(lasfile)
+laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset", pattern = '.las', full.names = T)
+for (i in 1:length(laslist)){
+  model_shift(i)
 }
+
 
 
 # -----------------------------------------------------------------
