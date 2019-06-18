@@ -40,13 +40,13 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # PARAMETERS (units = meters)
 # STEP: distance between the center of 2 adjacent moving windows
 # STEP parameter does not apply when using external points - see below
-STEP = 150
+STEP = 50
 # WIN_SIZE: width of square moving window
 WIN_SIZE = 30
 
 # canopy parameters
 # CANOPY_ONLY: Boolean of whether to use only top of canopy points
-CANOPY_ONLY = T
+CANOPY_ONLY = F
 # SMALL_TILE_CORES: number of corse to use (LAScatalog) for picking out canopy points
 SMALL_TILE_CORES = 4
 # SMALL_TILE_WINDOW: window size or gridcell size to designate canopy points
@@ -82,7 +82,7 @@ N_CLUSTERS = 8
 # START_ROW: if processing from scratch, should be = 1
 # otherwise if you are picking up a partially processed dataset, can specify a row to begin from
 # Existing rows in the csv will skipped
-START_ROW = 26670
+START_ROW = 1
 
 # INPUTS
 # DAP cloud, or cloud 'to be moved'
