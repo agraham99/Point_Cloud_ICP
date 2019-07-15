@@ -39,6 +39,7 @@ library(lidR)
 library(tidyverse)
 library(dplyr)
 library(tictoc)
+library(sf)
 
 # ------------------------------------------------------------------
 # PROJECT SETTINGS
@@ -57,12 +58,14 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_30_canopy_TRUE_icp_obs.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
-
 ext.points1.f = paste0("D:/JOE_RAKOFSKY/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
 ext.points1.df = read.csv(ext.points1.f, header = T, stringsAsFactors = F)
 # 
 # ext.points2.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_50_icp_obs.csv")
-# ext.points2.df = read.csv(ext.points.f, header = T, stringsAsFactors = F)
+# ext.points2.df = read.csv(ext.points2.f, header = T, stringsAsFactors = F)
+# ext.points2.df$blank = NA
+
+
 
 # remove duplicated rows... can happen if processing was stopped and started
 # points.df = points.df[!duplicated(points.df$row.names),]
@@ -70,7 +73,12 @@ ext.points1.df = read.csv(ext.points1.f, header = T, stringsAsFactors = F)
 # names(points.df) = c("n", "isnull", "coverage", "ICP", "x", "y", "RMS", "r1c1", "r2c1", "r3c1", "r1c2", "r2c2", "r3c2", "r1c3", "r2c3", "r3c3", "r1c4", "r2c4", "r3c4", "--")
 # Rewrite the points file if corrected here
 # write.csv(points.df, file = points.f,  row.names = F)
-points.df = rbind(points.df, ext.points1.df)#, ext.points2.df)
+names(ext.points1.df) = names(points.df)
+names(ext.points2.df) = names(points.df)
+points.df = rbind(points.df, ext.points1.df) #, ext.points2.df)
+
+f = "D:/JOE_RAKOFSKY/ICP_points/rbinded/master_SL_icp_points.csv"
+write.csv(points.df, f, row.names = F)
 
 # all points where ICP was run and therefore RMS is not NA
 # store as a seperate variable (pts) incase we want to see these points
@@ -85,15 +93,37 @@ p[,numcols] = apply(p[,numcols], 2, function(x) as.numeric(as.character(x)));
 names(p)[17:19] = c('x_trans', 'y_trans', 'z_trans')
 
 
+
+
+
 # ------------------------------------------------------------------
 # DEFINE POINTS AS SPATIAL
 p = SpatialPointsDataFrame(p[,5:6], p)
 proj4string(p) = crs
 # for writing to shapefile
-# writeOGR(p, points.f,
+# writeOGR(p, "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/ICP_pts_cutblocks2011_2014_plus_roads_sl_subset.shp",
 #          layer = basename(points.f),
-#          driver = 'ESRI Shapefile', 
+#          driver = 'ESRI Shapefile',
 #          overwrite_layer = T)
+
+
+# ------------------------------------------------------------------
+# MASK THE SPATIAL POINTS
+mask_layer.f = "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/cutblocks2011_2014_plus_roads_sl_subset.shp"
+mask_layer = readOGR(mask_layer.f)
+
+crs(mask_layer) = crs(p)
+p_masked = p[mask_layer,]
+
+p = p_masked
+# p_mask = rgeos::gIntersection(p[50000:70000,], mask_layer)
+# p_mask = st_intersects(p[50000:51000,], mask_layer)
+# writeOGR(p_masked, "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/ICP_masked_points_cutblocks2011_2014_plus_roads.shp",
+#          layer = 'p_masked',
+#           driver = 'ESRI Shapefile',
+#          overwrite_layer = T)
+# 
+
 
 # ------------------------------------------------------------------
 # FILTER DATA
@@ -105,8 +135,8 @@ proj4string(p) = crs
 # threhsolds to isolate "valid" icp results
 # thr.rotation a quantile value where only points greater than the threshold are selected
 # thr.RMS is a quantile value where only points below the threhsold are selected
-thr.rotation = 0.75
-thr.RMS = 0.25
+thr.rotation = 0.65
+thr.RMS = 0.35
 
 # thr.xtrans has min and max to cut off tails of the distribution 
 # specify the quantile threhsold for two tail exclusion
@@ -196,9 +226,6 @@ writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/", f, sep = ''), layer = f, driver = "ESR
 # # arrange the plots for display
 # do.call(grid.arrange, plots)
 
-
-# ------------------------------------------------------------------
-# MASK THE SPATIAL POINTS
 
 
 
@@ -338,7 +365,7 @@ cuts.p = round(cuts.p,4)
 spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
 
 f = gsub('.csv', '.shp', basename(points.f))
-# writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
+writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
 # write.csv(p@data,paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', basename(points.f), sep = ''))
 
 
@@ -509,36 +536,36 @@ scatter2(x = z.offset, y = icp.lm.z$fitted.values)
 # laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
 # laslist = sample(laslist, 200)
 
-catalog_apply_shift = function(cluster){
+catalog_apply_shift = function(cluster, icp.lm.z){
   las = readLAS(cluster)
   
   if (is.empty(las)) return(NULL)
+
+  # dataframe containing the x and y coords of the original cloud
+  g = data.frame(list(las$X, las$Y))
+  names(g) = c('x', 'y')
   
-  if (!is.null((las))){
-    # dataframe containing the x and y coords of the original cloud
-    g = data.frame(list(las$X, las$Y))
-    names(g) = c('x', 'y')
-    
-    
-    # predict the shifts
-    xshift = stats::predict(icp.lm.x, newdata = g)
-    yshift = stats::predict(icp.lm.y, newdata = g)
-    zshift = stats::predict(icp.lm.z, newdata = g)
-    
-    # apply the shift values 
-    las$X = las$X + xshift
-    las$Y = las$Y + yshift
-    las$Z = las$Z + zshift
-    
-    # riteLAS(las)
-    return(las)
-  }
+  
+  # predict the shifts
+  # xshift = stats::predict(icp.lm.x, newdata = g)
+  # yshift = stats::predict(icp.lm.y, newdata = g)
+  zshift = stats::predict(icp.lm.z, newdata = g)
+  
+  # apply the shift values 
+  # las$X = las$X + xshift
+  # las$Y = las$Y + yshift
+  las$Z = las$Z + zshift
+  
+  # riteLAS(las)
+  return(las)
+
 }
 
-ctg = catalog("H:/AFRF_ICP/DAP_Raw_Tiles_buf30/DELTA")
+test.list = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset", full.names = T)
+test.list = test.list[1:50]
 
-# set the tile width for processing
-opt_chunk_size(ctg) <- 100
+# ctg = catalog("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset")
+ctg = catalog(test.list)
 
 # use laz output option
 opt_laz_compression(ctg) <- TRUE
@@ -547,12 +574,24 @@ opt_laz_compression(ctg) <- TRUE
 # opt_cores(ctg) = 8
 
 # path and name for unwarped outputs
-opt_output_files(ctg) <- paste0("H:/AFRF_ICP/ICP_shifted/DELTA/", "shifted_{ID}")
+opt_output_files(ctg) <- paste0("D:/JOE_RAKOFSKY/mask_layers/masked_unwarp_results/", "masked_shifted_{ID}")
 # run the unwarping process
+
+# 3. Set some catalog options.
+# For this dummy example, the chunk size is 80 m and the buffer is 10 m using a single core.
+opt_chunk_buffer(ctg) <- 10
+opt_cores(ctg)        <- 1L
+opt_chunk_size(ctg)   <- 250            # small because this is a dummy example.
+opt_select(ctg)       <- "xyz"         # read only the coordinates.
+# opt_filter(ctg)       <- "-keep_first" # read only first returns.
+
+# 4. Apply a user-defined function to take advantage of the internal engine
+opt <- list(need_buffer = TRUE)   # catalog_apply will throw an error if buffer = 0
+
 
 tic('catalog_apply unwarping cloud')
 
-new_ctg = catalog_apply(ctg, catalog_apply_shift)
+new_ctg = catalog_apply(ctg, catalog_apply_shift, icp.lm.z = icp.lm.z)
 
 # measure the time of completion for the process
 toc()
@@ -568,7 +607,7 @@ toc()
 model_shift = function(i)
 {
   lasfile = laslist[i]
-  lasfilename = paste0("H:/AFRF_ICP/ICP_shifted/DELTA/", gsub(".laz", '', basename(lasfile)), '_shifted.laz')
+  lasfilename = paste0("D:/JOE_RAKOFSKY/mask_layers/masked_unwarp_results/", gsub(".las", '', basename(lasfile)), '_shifted.laz')
   if (!file.exists(lasfilename)){
     print('loading las...')
     las = readLAS(lasfile)
@@ -580,13 +619,13 @@ model_shift = function(i)
     
   
     # predict the shifts
-    xshift = stats::predict(icp.lm.x, newdata = g)
-    yshift = stats::predict(icp.lm.y, newdata = g)
+    # xshift = stats::predict(icp.lm.x, newdata = g)
+    # yshift = stats::predict(icp.lm.y, newdata = g)
     zshift = stats::predict(icp.lm.z, newdata = g)
     
     # apply the shift values 
-    las$X = las$X + xshift
-    las$Y = las$Y + yshift
+    # las$X = las$X + xshift
+    # las$Y = las$Y + yshift
     las$Z = las$Z + zshift
     print('writing shifted las...')
     writeLAS(las, lasfilename)
@@ -596,8 +635,8 @@ model_shift = function(i)
 }
 
 # path to original clouds
-laslist = list.files("H:/AFRF_ICP/DAP_Raw_Tiles_buf30/DELTA", pattern = '.laz', full.names = T)
-# laslist = sample(laslist, 200)
+laslist = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset", pattern = '.las', full.names = T)
+# laslist = laslist[1:100]
 
 # -----------------------------------------------
 # yet another way to apply the shifting according to the model using a simple for loop
