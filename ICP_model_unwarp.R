@@ -41,8 +41,6 @@ library(dplyr)
 library(tictoc)
 library(sf)
 
-# ------------------------------------------------------------------
-# PROJECT SETTINGS
 
 # coordinate system - proj4text
 crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
@@ -57,28 +55,6 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # points.f = paste0("<path to the csv file of ICP observation points created using ICP_moving_window.R>")
 points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_30_canopy_TRUE_icp_obs.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
-
-ext.points1.f = paste0("D:/JOE_RAKOFSKY/ICP_points/rand_pts_roads_win_30_canopy_FALSE_icp_obs.csv")
-ext.points1.df = read.csv(ext.points1.f, header = T, stringsAsFactors = F)
-# 
-# ext.points2.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_50_icp_obs.csv")
-# ext.points2.df = read.csv(ext.points2.f, header = T, stringsAsFactors = F)
-# ext.points2.df$blank = NA
-
-
-
-# remove duplicated rows... can happen if processing was stopped and started
-# points.df = points.df[!duplicated(points.df$row.names),]
-# Make sure the column names of the points table looks like the following
-# names(points.df) = c("n", "isnull", "coverage", "ICP", "x", "y", "RMS", "r1c1", "r2c1", "r3c1", "r1c2", "r2c2", "r3c2", "r1c3", "r2c3", "r3c3", "r1c4", "r2c4", "r3c4", "--")
-# Rewrite the points file if corrected here
-# write.csv(points.df, file = points.f,  row.names = F)
-names(ext.points1.df) = names(points.df)
-names(ext.points2.df) = names(points.df)
-points.df = rbind(points.df, ext.points1.df) #, ext.points2.df)
-
-f = "D:/JOE_RAKOFSKY/ICP_points/rbinded/master_SL_icp_points.csv"
-write.csv(points.df, f, row.names = F)
 
 # all points where ICP was run and therefore RMS is not NA
 # store as a seperate variable (pts) incase we want to see these points
@@ -116,8 +92,7 @@ crs(mask_layer) = crs(p)
 p_masked = p[mask_layer,]
 
 p = p_masked
-# p_mask = rgeos::gIntersection(p[50000:70000,], mask_layer)
-# p_mask = st_intersects(p[50000:51000,], mask_layer)
+
 # writeOGR(p_masked, "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/ICP_masked_points_cutblocks2011_2014_plus_roads.shp",
 #          layer = 'p_masked',
 #           driver = 'ESRI Shapefile',
@@ -214,13 +189,13 @@ writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/", f, sep = ''), layer = f, driver = "ESR
 # i = 0
 # for (trans in c('x_trans', 'y_trans', 'z_trans')){
 #   i = i+1
-#   
-#   # run this block alone for 
+# 
+#   # run this block alone for
 #   n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
 #   cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
 #   cuts.p = round(cuts.p,1)
 #   plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans)
-#   
+# 
 #   plots[[i]] = plot
 # }
 # # arrange the plots for display

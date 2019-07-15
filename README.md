@@ -58,7 +58,7 @@ loaded via a namespace (and not attached):
 
 # Usage
 
-## ICP_moving_window.R
+### ICP Moving Window
 [ICP_moving_window.Rmd](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
 
 This script serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
@@ -67,9 +67,11 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 ![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
 
+![Image of DAP and ALS clouds](https://github.com/spireaero/ICP/blob/master/images/icp.PNG)
 
 
 
-## [the next script]  
+
+###   
 
 
