@@ -156,7 +156,7 @@ Filtering should not be performed on the translation vectors that are to be mode
 
 ```r
 thr.rotation = 0.25
-thr.RMS = 0.35
+thr.RMS = 0.75
 alpha = 0.01
 
 tail_min = alpha
@@ -215,6 +215,10 @@ hist(p$r3c3, b)
 hist(p$z_trans, b)
 ```
 \  
+
+Figure 1. Example histograms of ICP estimated shift values for 
+
+
 
 ---------------------------------------------------------------------------------
 

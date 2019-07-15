@@ -53,7 +53,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # n, isnull, coverage,   ICP,        x,          y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4
 # where 'r' and 'c' refer to row and column of the ICP transformation matrix
 # points.f = paste0("<path to the csv file of ICP observation points created using ICP_moving_window.R>")
-points.f = paste0("D:/JOE_RAKOFSKY/ICP_points/step_150_win_30_canopy_TRUE_icp_obs.csv")
+points.f = paste0("H:/AFRF_ICP/ICP_points/best/AFRF_BRAVO_step_15_win_50_icp_moving_window_log.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
 # all points where ICP was run and therefore RMS is not NA
@@ -85,13 +85,13 @@ proj4string(p) = crs
 
 # ------------------------------------------------------------------
 # MASK THE SPATIAL POINTS
-mask_layer.f = "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/cutblocks2011_2014_plus_roads_sl_subset.shp"
-mask_layer = readOGR(mask_layer.f)
-
-crs(mask_layer) = crs(p)
-p_masked = p[mask_layer,]
-
-p = p_masked
+# mask_layer.f = "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/cutblocks2011_2014_plus_roads_sl_subset.shp"
+# mask_layer = readOGR(mask_layer.f)
+# 
+# crs(mask_layer) = crs(p)
+# p_masked = p[mask_layer,]
+# 
+# p = p_masked
 
 # writeOGR(p_masked, "D:/JOE_RAKOFSKY/mask_layers/cutblocks2011_2014_plus_roads/ICP_masked_points_cutblocks2011_2014_plus_roads.shp",
 #          layer = 'p_masked',
@@ -110,8 +110,8 @@ p = p_masked
 # threhsolds to isolate "valid" icp results
 # thr.rotation a quantile value where only points greater than the threshold are selected
 # thr.RMS is a quantile value where only points below the threhsold are selected
-thr.rotation = 0.65
-thr.RMS = 0.35
+thr.rotation = 0.25
+thr.RMS = 0.75
 
 # thr.xtrans has min and max to cut off tails of the distribution 
 # specify the quantile threhsold for two tail exclusion

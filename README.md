@@ -67,7 +67,7 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 ![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
 
-![Image of DAP and ALS clouds](https://github.com/spireaero/ICP/blob/master/images/icp.PNG)
+
 
 
 
