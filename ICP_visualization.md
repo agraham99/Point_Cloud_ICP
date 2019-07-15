@@ -158,7 +158,7 @@ Quantile threhsolds are used below to filter points based on ICP estimated rotat
 
 ``` r
 thr.rotation = 0.25
-thr.RMS = 0.35
+thr.RMS = 0.75
 alpha = 0.01
 
 tail_min = alpha
@@ -220,6 +220,10 @@ hist(p$z_trans, b)
 ```
 
  
+
+Figure 1. Example histograms of ICP estimated shift values for area ALPHA in AFRF block.
+
+![AFRF\_ALPHA\_HISTOGRAMS](images/afrf_alpha_histograms.png)
 
 ------------------------------------------------------------------------
 

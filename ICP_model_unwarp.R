@@ -155,17 +155,17 @@ b = 100
 hist(p$r1c1, b)
 hist(p$r1c2, b)
 hist(p$r1c3, b)
-hist(p$x_trans, b)
+hist(p$x_trans, b, xlab = 'x trans (m)')
 # row 2
 hist(p$r2c1, b)
 hist(p$r2c2, b)
 hist(p$r2c3, b)
-hist(p$y_trans, b)
+hist(p$y_trans, b, xlab = 'y trans (m)')
 # row 3
 hist(p$r3c1, b)
 hist(p$r3c2, b)
 hist(p$r3c3, b)
-hist(p$z_trans, b)
+hist(p$z_trans, b,  xlab = 'z trans (m)')
 
 # SPATIAL PLOTS of the points
 # ----------------------------------------------------------------
