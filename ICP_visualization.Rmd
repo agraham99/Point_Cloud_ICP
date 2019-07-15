@@ -216,7 +216,9 @@ hist(p$z_trans, b)
 ```
 \  
 
-Figure 1. Example histograms of ICP estimated shift values for 
+Figure 1. Example histograms of ICP estimated shift values for area ALPHA in AFRF block. 
+
+![AFRF_ALPHA_HISTOGRAMS](https://github.com/spireaero/ICP/blob/master/images/afrf_alpha_histograms.png)
 
 
 
