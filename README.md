@@ -59,10 +59,17 @@ loaded via a namespace (and not attached):
 # Usage
 
 ## ICP_moving_window.R
+[ICP_moving_window.Rmd](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
 
 This script serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
 
 The reference and data (to-be-aligned) point-cloud are clipped to the extent of each window.  The point density of the clipped point-clouds are reduced to the match one another using the [subsample tool](https://www.cloudcompare.org/doc/wiki/index.php?title=Edit%5CSubsample) found in CloudCompare with the 'Spatial' option.  The  ICP algorithm is then performed on the resulting subsampled point clouds.
 
 ![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
+
+
+
+
+## [the next script]  
+
 
