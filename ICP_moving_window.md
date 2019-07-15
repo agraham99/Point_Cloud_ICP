@@ -1,22 +1,19 @@
----
-title: "ICP Moving Window"
-author: "Alex Graham"
-date: "July 15, 2019"
-output: rmarkdown::github_document
----
-\  
+ICP Moving Window
+================
+Alex Graham
+July 15, 2019
 
+ 
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 #### Overview
 
+This script performs a moving window operation where ICP point matching occurs in each moving window. The output is a series of points with the 3x4 rotation/translation matrix of the ICP matching process as a row.
 
-This script performs a moving window operation where ICP point matching occurs in each moving window.  The output is a series of points with the 3x4 rotation/translation matrix of the ICP matching process as a row.  
+Input clouds can be either DAP or ALS. The program was developed using ALS data as a reference cloud. Clouds are used as LAScatalog objects from the lidR package. Optimal matching is acheived when using clouds of similar point densities. The program will spatially subsample both clouds to same point density with the SUBSAMPLE\_DISTANCE parameter, the minimum distance between two points is generally best between 0.2-0.8 m.
 
-Input clouds can be either DAP or ALS.  The program was developed using ALS data as a reference cloud.
-Clouds are used as LAScatalog objects from the lidR package. Optimal matching is acheived when using clouds of similar point densities.  The program will spatially subsample both clouds to same point density with the SUBSAMPLE_DISTANCE parameter, the minimum distance between two points is generally best between 0.2-0.8 m.
-```r
+``` r
 # R Project: ICP
 # version control with Git
 
@@ -49,13 +46,15 @@ CloudCompare = "C:/PROGRA~1/CloudCompare/CloudCompare.exe"
 crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 ```
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 #### INPUTS
-\  
+
+ 
 
 'DAP' is cloud 'to be moved' while 'ALS' is the reference cloud
-```r
+
+``` r
 DAP.path = "D:/JOE_RAKOFSKY/DAP_raw_rembuf"
 DAP = lidR::catalog(DAP.path)
 
@@ -63,132 +62,144 @@ ALS.path = "D:/JOE_RAKOFSKY/ALS/raw"
 ALS = lidR::catalog(ALS.path)
 ```
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 #### PARAMETERS (units = meters)
-\  
+
+ 
 
 ##### **Moving Window Parameters**
-\  
 
-* **STEP**  -  Distance between the center of 2 adjacent moving windows.
-The STEP parameter does not apply when using external points - see EXTERNAL_POINTS
-```r
-STEP = 50
-```
+ 
 
-* **WIN_SIZE**  -  Width of square moving window
-```r
-WIN_SIZE = 30
-```
+-   **STEP** - Distance between the center of 2 adjacent moving windows. The STEP parameter does not apply when using external points - see EXTERNAL\_POINTS
 
-\  
+    ``` r
+    STEP = 50
+    ```
 
-##### **Canopy Parameters** 
-\  
+-   **WIN\_SIZE** - Width of square moving window
 
-* **CANOPY_ONLY**  -  Boolean of whether to use only top of canopy points
-```r
-CANOPY_ONLY = F
-```
+    ``` r
+    WIN_SIZE = 30
+    ```
 
-* **SMALL_TILE_CORES**  -  Number of cores to use (LAScatalog) for picking out canopy points
-```r
-SMALL_TILE_CORES = 4
-```
+ 
 
-* **SMALL_TILE_WINDOW**  -  window size or gridcell size to designate canopy points
-```r
-SMALL_TILE_WINDOW = 2
-```
+##### **Canopy Parameters**
 
-* **SMALL_TILE_BUFFER**  -  Optional buffer for small window size
-```r
-SMALL_TILE_BUFFER = 0
-```
+ 
 
-\  
+-   **CANOPY\_ONLY** - Boolean of whether to use only top of canopy points
+
+    ``` r
+    CANOPY_ONLY = F
+    ```
+
+-   **SMALL\_TILE\_CORES** - Number of cores to use (LAScatalog) for picking out canopy points
+
+    ``` r
+    SMALL_TILE_CORES = 4
+    ```
+
+-   **SMALL\_TILE\_WINDOW** - window size or gridcell size to designate canopy points
+
+    ``` r
+    SMALL_TILE_WINDOW = 2
+    ```
+
+-   **SMALL\_TILE\_BUFFER** - Optional buffer for small window size
+
+    ``` r
+    SMALL_TILE_BUFFER = 0
+    ```
+
+ 
 
 ##### **Subsample and ICP parameters**
-\  
 
-* **SUBSAMPLE_DISTANCE**  -  Minimum distance between points for point cloud to be processed in ICP 
-```r
-SUBSAMPLE_DISTANCE = 0.5
-```
+ 
 
-* **RANDOM_SAMPLE_LIMIT** - Limit of number of points to randomly sample for RMS calcuation for ICP at each iteration
-```r
-RANDOM_SAMPLE_LIMIT = 25000
-```
+-   **SUBSAMPLE\_DISTANCE** - Minimum distance between points for point cloud to be processed in ICP
 
-* **ICP_OVERLAP** - Estimated overlap (%) between the 2 point clouds in each window after ICP;
-should be less than 100 since some small shifting in X and Y is anticipated, large X and Y shifts should not generally be anticipated
-```r
-ICP_OVERLAP = 97
-```
+    ``` r
+    SUBSAMPLE_DISTANCE = 0.5
+    ```
 
-* **GLOBAL_SHIFT_AUTO** - If True, CloudCompare will define a local coordinate system with global shifts. CloudCompare will preserve the absolute coordinates for any point cloud results exported.  If False, must supply global shift values below.
-```r
-GLOBAL_SHIFT_AUTO = T
-```
+-   **RANDOM\_SAMPLE\_LIMIT** - Limit of number of points to randomly sample for RMS calcuation for ICP at each iteration
 
-* **GLOBAL_SHIFT_X**
-* **GLOBAL_SHIFT_Y**
-* **GLOBAL_SHIFT_Z**
+    ``` r
+    RANDOM_SAMPLE_LIMIT = 25000
+    ```
 
-    Set a manual global shift for local coordinates.
-CloudCompare suggests not using large UTM coordinates with 5+ digits to work with - use caution if specifying manual shift
-For example: if the rough coordinates are X: 500,100 and y: 6,000,100, use 
-GLOBAL_SHIFT_X = 500000 and GLOBAL_SHIFT_Y = 6000000
-```r
-GLOBAL_SHIFT_X = 0
-GLOBAL_SHIFT_Y = 0
-GLOBAL_SHIFT_Z = 0
-```
+-   **ICP\_OVERLAP** - Estimated overlap (%) between the 2 point clouds in each window after ICP; should be less than 100 since some small shifting in X and Y is anticipated, large X and Y shifts should not generally be anticipated
 
-* **N_CLUSTERS** - Number of processes to run in parallel using the doParallel and foreach packages
-```r
-N_CLUSTERS = 8
-```
+    ``` r
+    ICP_OVERLAP = 97
+    ```
 
-* **START_ROW** - If processing from scratch, should be = 1,
-Otherwise if you are picking up a partially processed dataset, can specify a row to begin from. Check the output CSV file to see which row to begin from.  
-Existing rows in the csv will skipped
-```r
-START_ROW = 1
-```
+-   **GLOBAL\_SHIFT\_AUTO** - If True, CloudCompare will define a local coordinate system with global shifts. CloudCompare will preserve the absolute coordinates for any point cloud results exported. If False, must supply global shift values below.
 
-* **EXTERNAL_POINTS** & **EXTERNAL_POINTS_FILE** - This is a predetermined set of points of interest where we want to perform the ICP estimations
-File is .shp
+    ``` r
+    GLOBAL_SHIFT_AUTO = T
+    ```
 
-* For example: points along known roads, or areas where harvest has occurred 
-use the T/F switch here to specify whether we are using an external points file
-```r
-EXTERNAL_POINTS = F
-EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
-```
+-   **GLOBAL\_SHIFT\_X**
+-   **GLOBAL\_SHIFT\_Y**
+-   **GLOBAL\_SHIFT\_Z**
 
-* **EXTERNAL_BOUNDARY** & **EXTERNAL_BOUNDARY_FILE** - Specify a custom boundary to restrict the extent of ICP operations
-File is .shp
-```r
-EXTERNAL_BOUNDARY = T
-EXTERNAL_BOUNDARY_FILE = "D:/JOE_RAKOFSKY/SL_subset/SL_subset.shp"
-```
+    Set a manual global shift for local coordinates. CloudCompare suggests not using large UTM coordinates with 5+ digits to work with - use caution if specifying manual shift For example: if the rough coordinates are X: 500,100 and y: 6,000,100, use GLOBAL\_SHIFT\_X = 500000 and GLOBAL\_SHIFT\_Y = 6000000
 
-* **points_dir** - Set a location for ICP observaion points output (csv file)
-```r
-points_dir = "D:/JOE_RAKOFSKY/ICP_points"
-```
+    ``` r
+    GLOBAL_SHIFT_X = 0
+    GLOBAL_SHIFT_Y = 0
+    GLOBAL_SHIFT_Z = 0
+    ```
 
----------------------------------------------------------------------------------
+-   **N\_CLUSTERS** - Number of processes to run in parallel using the doParallel and foreach packages
+
+    ``` r
+    N_CLUSTERS = 8
+    ```
+
+-   **START\_ROW** - If processing from scratch, should be = 1, Otherwise if you are picking up a partially processed dataset, can specify a row to begin from. Check the output CSV file to see which row to begin from.
+    Existing rows in the csv will skipped
+
+    ``` r
+    START_ROW = 1
+    ```
+
+-   **EXTERNAL\_POINTS** & **EXTERNAL\_POINTS\_FILE** - This is a predetermined set of points of interest where we want to perform the ICP estimations File is .shp
+
+-   For example: points along known roads, or areas where harvest has occurred use the T/F switch here to specify whether we are using an external points file
+
+    ``` r
+    EXTERNAL_POINTS = F
+    EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
+    ```
+
+-   **EXTERNAL\_BOUNDARY** & **EXTERNAL\_BOUNDARY\_FILE** - Specify a custom boundary to restrict the extent of ICP operations File is .shp
+
+    ``` r
+    EXTERNAL_BOUNDARY = T
+    EXTERNAL_BOUNDARY_FILE = "D:/JOE_RAKOFSKY/SL_subset/SL_subset.shp"
+    ```
+
+-   **points\_dir** - Set a location for ICP observaion points output (csv file)
+
+    ``` r
+    points_dir = "D:/JOE_RAKOFSKY/ICP_points"
+    ```
+
+------------------------------------------------------------------------
 
 #### PRE-PROCESSING CODE BLOCKS
-\  
 
-Switches for whether or not external points are to be used.
-The observations CSV filename will contain STEP, WIN_SIZE, and CANOPY_ONLY.
-```r
+ 
+
+Switches for whether or not external points are to be used. The observations CSV filename will contain STEP, WIN\_SIZE, and CANOPY\_ONLY.
+
+``` r
 if (EXTERNAL_POINTS == F){
   icp_points = paste(points_dir, '/', "step_", STEP, "_win_", WIN_SIZE, "_canopy_", CANOPY_ONLY, "_icp_obs.csv", sep = '')
   
@@ -224,21 +235,25 @@ if (EXTERNAL_POINTS == T){
   Proj_gridpts$CID = seq(1, nrow(Proj_gridpts), 1)
 }
 ```
-\  
+
+ 
 
 Write the header line to the observations points CSV.
 
 r1c1, r1c2, etc... are the values of the 3 by 4 transforamtion matrix resulting from each ICP instance in the moving window operation where 'r' refers to row and 'c' refers to column.
-```r
+
+``` r
 # check if the file exists first as to not overwrite
 if (!file.exists(icp_points)){
   writeLines(c("i, isnull, coverage, ICP, x, y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4,"), icp_points)
 }
 ```
-\  
+
+ 
 
 Switches for whether or not external boundary is to be used.
-```r
+
+``` r
 if(EXTERNAL_BOUNDARY == T){
   ext_bound = readOGR(EXTERNAL_BOUNDARY_FILE)
   ext_bound = rgeos::gBuffer(ext_bound, width = 1000)
@@ -269,26 +284,30 @@ if(EXTERNAL_BOUNDARY == F){
   Proj_gridpts = Proj_gridpts@coords
 }
 ```
-\  
 
-Make function for writing output to log file in for each parallel. 
-This allows us to keep adding to the csv while running in parallel with the 'foreach' package
-```r
+ 
+
+Make function for writing output to log file in for each parallel. This allows us to keep adding to the csv while running in parallel with the 'foreach' package
+
+``` r
 catf <- function(..., file=icp_points, append=TRUE){
   cat(..., file=file, append=append)
 }
 ```
-\  
 
----------------------------------------------------------------------------------
+ 
+
+------------------------------------------------------------------------
 
 #### MAIN FUNCTIONS
-\  
 
-* **Moving_Window_ICP(i)**
+ 
 
-This function performs the moving window operation and checks for extent matches between the two clipped point clouds at each window and decides whether or not to use the Run_ICP() function. i is the row ID of each moving window operation and is the first column of the CSV. 
-```r
+-   **Moving\_Window\_ICP(i)**
+
+This function performs the moving window operation and checks for extent matches between the two clipped point clouds at each window and decides whether or not to use the Run\_ICP() function. i is the row ID of each moving window operation and is the first column of the CSV.
+
+``` r
 Moving_Window_ICP = function(i){
   # FOR TESTING
   # i = sample(1:nrow(Proj_gridpts), 1)
@@ -420,12 +439,14 @@ Moving_Window_ICP = function(i){
   } # end of skiprow switch
 } # end function Moving_window_ICP
 ```
-\  
 
-* **Run_ICP(DAP_TILE.f, ALS_TILE.f, i)** 
+ 
 
-This functions creates and fires the call to CloudComapre ICP using system() and is nested in the Moving_Window_ICP function defined below. The iterator i is inhereted from the Moving_Window_ICP function.  The function also decides whether or not to use canopy points based on the Canopy Parameters defined above. 
-```r
+-   **Run\_ICP(DAP\_TILE.f, ALS\_TILE.f, i)**
+
+This functions creates and fires the call to CloudComapre ICP using system() and is nested in the Moving\_Window\_ICP function defined below. The iterator i is inhereted from the Moving\_Window\_ICP function. The function also decides whether or not to use canopy points based on the Canopy Parameters defined above.
+
+``` r
 Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
   
   # global shift values for local coords in CloudCompare
@@ -679,31 +700,36 @@ Run_ICP = function(DAP_TILE.f, ALS_TILE.f, i){
   return(f.row.char)
 } # end Run_ICP
 ```
-\  
 
----------------------------------------------------------------------------------
+ 
+
+------------------------------------------------------------------------
 
 #### EXECUTION
-\  
+
+ 
 
 Make cluster of set number of workers and register cluster - see documentation for foreach package.
-```r
+
+``` r
 cl = makeCluster(N_CLUSTERS)
 registerDoParallel(cl)
 ```
-\  
+
+ 
 
 Measuring the time taken for execution.
-```r
+
+``` r
 library(tictoc)
 tic('ICP foreach')
 ```
-\  
 
-For all the points in the initially defined grid... make sure to pass the necessary packages to the clusters. If 'start' = 1 then we start at the beginning of the points and go sequentially.
-Progression depends on how the points are ordered in Proj_gridpts.
-Must specify the packages which need to be loaded to each cluster using .packages argument.
-```r
+ 
+
+For all the points in the initially defined grid... make sure to pass the necessary packages to the clusters. If 'start' = 1 then we start at the beginning of the points and go sequentially. Progression depends on how the points are ordered in Proj\_gridpts. Must specify the packages which need to be loaded to each cluster using .packages argument.
+
+``` r
 foreach (i = START_ROW:nrow(Proj_gridpts),
          .packages = c("lidR",
                        "sp",
@@ -719,13 +745,13 @@ toc()
 # stop any rogue clusters
 stopCluster(cl)
 ```
-\  
+
+ 
 
 Alternative way of non-parallel execution, can be used for testing/debugging
-```r
+
+``` r
 # for (i in 1:nrow(Proj_gridpts)){
 #   Moving_Window_ICP(i)
 # }
 ```
-
-
