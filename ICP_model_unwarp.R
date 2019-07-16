@@ -53,7 +53,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # n, isnull, coverage,   ICP,        x,          y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4
 # where 'r' and 'c' refer to row and column of the ICP transformation matrix
 # points.f = paste0("<path to the csv file of ICP observation points created using ICP_moving_window.R>")
-points.f = paste0("H:/AFRF_ICP/ICP_points/best/AFRF_BRAVO_step_15_win_50_icp_moving_window_log.csv")
+points.f = paste0("H:/AFRF_ICP/ICP_points/best/AFRF_ALPHA_step_15_win_50_icp_moving_window_log.csv")
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
 # all points where ICP was run and therefore RMS is not NA
@@ -176,7 +176,9 @@ n = abs(round((max(p[[trans]]) - min(p[[trans]]))/9, 4))
 cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
 cuts.p = round(cuts.p,4)
 trellis.par.set(axis.line=list(col=NA)) 
-spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
+sp::spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5,
+           auto.key = list(title = paste0(trans, '(m)')))
+
 
 # write the shp file of the subset of points
 f = gsub('.csv', '.shp', basename(points.f))
@@ -185,21 +187,22 @@ writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/", f, sep = ''), layer = f, driver = "ESR
 # ------------------------------------------------------------------
 # MAKE SPATIAL PLOTS of the observed shifts IN A LOOP
 # empty list to populate with spplot objects
-# plots = list()
-# i = 0
-# for (trans in c('x_trans', 'y_trans', 'z_trans')){
-#   i = i+1
-# 
-#   # run this block alone for
-#   n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
-#   cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
-#   cuts.p = round(cuts.p,1)
-#   plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans)
-# 
-#   plots[[i]] = plot
-# }
-# # arrange the plots for display
-# do.call(grid.arrange, plots)
+plots = list()
+i = 0
+for (trans in c('x_trans', 'y_trans', 'z_trans')){
+  i = i+1
+
+  # run this block alone for
+  n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
+  cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
+  cuts.p = round(cuts.p,1)
+  plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans,
+                auto.key = list(title = paste0(trans, '(m)')))
+
+  plots[[i]] = plot
+}
+# arrange the plots for display
+do.call(grid.arrange, plots)
 
 
 
@@ -317,9 +320,15 @@ confint(icp.lm.y, level=0.999)
 confint(icp.lm.z, level=0.999)
 
 # add the RMSE
-RSS <- c(crossprod(icp.lm.z$residuals))
-MSE <- RSS / length(icp.lm.z$residuals)
-RMSE <- sqrt(MSE)
+RSS.x <- c(crossprod(icp.lm.x$residuals))
+MSE.x <- RSS.x / length(icp.lm.x$residuals)
+RMSE.x <- sqrt(MSE.x)
+RSS.y <- c(crossprod(icp.lm.y$residuals))
+MSE.y <- RSS.y / length(icp.lm.y$residuals)
+RMSE.y <- sqrt(MSE.y)
+RSS.z <- c(crossprod(icp.lm.z$residuals))
+MSE.z <- RSS.z / length(icp.lm.z$residuals)
+RMSE.z <- sqrt(MSE.z)
 
 # bind the residuals from the model to tthe original points table
 p = cbind(p, icp.lm.x$residuals)
@@ -337,7 +346,8 @@ trans = 'Zresidual'
 n = abs(round((max(p[[trans]]) - min(p[[trans]]))/11, 4))
 cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
 cuts.p = round(cuts.p,4)
-spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5)
+spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5,
+       auto.key = list(title = paste0(trans, '(m)')))
 
 f = gsub('.csv', '.shp', basename(points.f))
 writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)

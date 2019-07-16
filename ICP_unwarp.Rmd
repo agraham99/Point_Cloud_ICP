@@ -1,0 +1,12 @@
+---
+title: "ICP Unwarp"
+author: "Alex Graham"
+date: "July 15, 2019"
+output: rmarkdown::github_document
+---
+
+```{r eval = TRUE, include = TRUE}
+icp.lm.x = readRDS(file = "data/lm/icp_lm_x.rds")
+icp.lm.y = readRDS(file = "data/lm/icp_lm_y.rds")
+icp.lm.z = readRDS(file = "data/lm/icp_lm_z.rds")
+```
