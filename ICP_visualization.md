@@ -284,7 +284,7 @@ for (trans in c('x_trans', 'y_trans', 'z_trans')){
 do.call(grid.arrange, plots)
 ```
 
-![AFRF\_ALPHA\_SPATIAL\_all\_trans](images/ALPHA_all_trans.png)
+![AFRF\_ALPHA\_SPATIAL\_all\_trans](images/alpha_all_trans.png)
 
 **Figure 3.** *Spatial plots of shift estimates for x, y, and z directions for ALPHA block of AFRF*  
 
