@@ -78,11 +78,11 @@ loaded via a namespace (and not attached):
 
 #### [ICP Moving Window](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
 
-This script serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
+[ICP_moving_window.R](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.R) serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
 
 The reference and data (to-be-aligned) point-cloud are clipped to the extent of each window.  The point density of the clipped point-clouds are reduced to the match one another using the [subsample tool](https://www.cloudcompare.org/doc/wiki/index.php?title=Edit%5CSubsample) found in CloudCompare with the 'Spatial' option.  The  ICP algorithm is then performed on the resulting subsampled point clouds.
 
-![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
+![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/README_Figure_1.png)  
 
 *Figure 1* Schematic of moving window operation where ICP estimated results are stored at each point.
 
@@ -92,7 +92,7 @@ See the Markdown file for [ICP Moving Window](https://github.com/spireaero/ICP/b
 
 #### [ICP Visualization](https://github.com/spireaero/ICP/blob/master/ICP_visualization.md)
 
-
+This script
 
 
 
