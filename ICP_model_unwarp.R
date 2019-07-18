@@ -576,10 +576,17 @@ lasshift.LAScatalog = function(las)
 
 ctg = catalog("H:/AFRF_ICP/DAP_Raw/ALPHA/alpha_group1_densified_point_cloud_part_6.las")
 # opt_select(ctg) <- "xyz"         # read only the coordinates.
-opt_chunk_size(ctg) <- 100       # process in chunks of ___ meters
+opt_chunk_size(ctg) <- 100       # process in tiles of ___ meters
 opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/{ID}_shifted"
-opt_cores(ctg) <- 8
-opt_chunk_buffer(ctg) <- 0       # need to force no buffer or else default is 25m
+
+# Objects in the global environnement are not automatically exported in each worker. 
+# Set opt_cores to 1 is the solution in version 2.0.y. 
+# In version 2.1.0 you can export manually some object in each worker using the package future. 
+# See also https://github.com/Jean-Romain/lidR/blob/master/NEWS.md. 
+opt_cores(ctg) <- 1L            
+
+# add a buffer to the tiles
+opt_chunk_buffer(ctg) <- 0       
 
 # run the lasshift catalog_apply method. 
 new_ctg = lasshift(ctg)

@@ -5,44 +5,109 @@ date: "July 15, 2019"
 output: rmarkdown::github_document
 ---
 
-```{r eval = TRUE, include = TRUE}
+--------------------------------------------------------------------------------
+
+#### Overview
+
+This script uses polynomial model objects created in *ICP_visualization.R* and applies a translational shift to a point cloud. 
+
+#### Inputs
+
+Read the raw point cloud to be shifted and the *lm* objects generated using *ICP_visualization.R*
+```{r eval = FALSE, include = TRUE}
+raw_cloud = "<path to las/laz file(s)>"
+
 icp.lm.x = readRDS(file = "data/lm/icp_lm_x.rds")
 icp.lm.y = readRDS(file = "data/lm/icp_lm_y.rds")
 icp.lm.z = readRDS(file = "data/lm/icp_lm_z.rds")
 ```
 
-###  
+#### Apply shifts using the LAScatalog processing engine
 
+For more info see: https://cran.r-project.org/web/packages/lidR/vignettes/lidR-catalog-apply-examples.html
 
-# https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
-# -----------------------------------------------------------
-lasshift = function(cluster)
+and
+
+https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
+
+First create a generic function usable for mulitple classes
+```{r eval = FALSE, include = TRUE}
+lasshift = function(las)
 {
-  las = readLAS(cluster)
-  if (is.empty(las)) return(NULL)
+  UseMethod("lasshift", las)
+}
+```
+
+Create a function which works on class LAS and performs the coordinate shifting
+```{r eval = FALSE, include = TRUE}
+lasshift.LAS = function(las)
+{
   # dataframe containing the x and y coords of the original cloud
   g = data.frame(list(las$X, las$Y))
   print(names(g))
   names(g) = c('x', 'y')
   
-  
   # predict the shifts
-  # xshift = stats::predict(icp.lm.x, newdata = g)
-  # yshift = stats::predict(icp.lm.y, newdata = g)
+  xshift = stats::predict(icp.lm.x, newdata = g)
+  yshift = stats::predict(icp.lm.y, newdata = g)
   zshift = stats::predict(icp.lm.z, newdata = g)
   
   # apply the shift values 
-  # las$X = las$X + xshift
-  # las$Y = las$Y + yshift
+  las$X = las$X + xshift
+  las$Y = las$Y + yshift
   las$Z = las$Z + zshift
   
   return(las)
 }
+```
 
-ctg = catalog("H:/AFRF_ICP/DAP_Raw/ALPHA/alpha_group1_densified_point_cloud_part_6.las")
-opt_select(ctg) <- "xyz"         # read only the coordinates.
-opt_chunk_size(ctg) <- 100       # process in chunks of ___ meters
-opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/shifted_{ID}"
-opt_cores(ctg) <- 8
+Create a catalog_apply compatible function
+```{r eval = FALSE, include = TRUE}
+lasshift.LAScluster = function(las)
+{
+  las <- readLAS(las)                        
+  if (is.empty(las)) return(NULL)           
+  
+  las <- lasshift(las)
+  return(las)
+}
+```
 
-catalog_apply(ctg, lasshift)
+Create a method for LAScatalog object
+```{r eval = FALSE, include = TRUE}
+lasshift.LAScatalog = function(las)
+{
+  # Force some options
+  # opt_select(las) <-  "*" 
+  opt_chunk_buffer(las) <- 0
+  
+  # options <- list(need_output_file = TRUE)
+  
+  output <- catalog_apply(las, lasshift)
+  output <- unlist(output)
+  output <- catalog(output)
+  return(output)
+}
+```
+
+Specify the input catalog object and some options, then run the lasshift method on the catalog
+```{r eval = FALSE, include = TRUE}
+ctg = catalog(raw_cloud)
+# opt_select(ctg) <- "xyz"         # read only the coordinates.
+opt_chunk_size(ctg) <- 100       # process in tiles of ___ meters
+opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/{ID}_shifted"
+
+# Objects in the global environnement are not automatically exported in each worker. 
+# Set opt_cores to 1 is the solution in version 2.0.y. 
+# In version 2.1.0 you can export manually some object in each worker using the package future. 
+# See also https://github.com/Jean-Romain/lidR/blob/master/NEWS.md. 
+opt_cores(ctg) <- 1L            
+
+# add a buffer to the tiles
+opt_chunk_buffer(ctg) <- 0       
+
+# run the lasshift catalog_apply method. 
+new_ctg = lasshift(ctg)
+```
+
+
