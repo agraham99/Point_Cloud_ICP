@@ -23,11 +23,11 @@ icp.lm.z = readRDS(file = "data/lm/icp_lm_z.rds")
 
 #### Apply shifts using the LAScatalog processing engine
 
-For more info see: <https://cran.r-project.org/web/packages/lidR/vignettes/lidR-catalog-apply-examples.html>
+For more info see:
 
-and
+-   <https://cran.r-project.org/web/packages/lidR/vignettes/lidR-catalog-apply-examples.html>
 
-<https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r>
+-   <https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r>
 
 First create a generic function usable for mulitple classes
 
@@ -99,7 +99,7 @@ Specify the input catalog object and some options, then run the lasshift method 
 ctg = catalog(raw_cloud)
 # opt_select(ctg) <- "xyz"         # read only the coordinates.
 opt_chunk_size(ctg) <- 100       # process in tiles of ___ meters
-opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/{ID}_shifted"
+opt_output_files(ctg) <- "<path to newly shifted point clouds>/{ID}_shifted"
 
 # Objects in the global environnement are not automatically exported in each worker. 
 # Set opt_cores to 1 is the solution in version 2.0.y. 

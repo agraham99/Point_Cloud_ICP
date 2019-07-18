@@ -58,8 +58,14 @@ loaded via a namespace (and not attached):
 
 # Usage
 
-### ICP Moving Window
-[ICP_moving_window.Rmd](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
+
+### Overview
+
+1. Generate shift observations using [ICP_moving_window.R](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
+
+
+### [ICP Moving Window](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
+
 
 This script serves to create the observation points which are location estimations of the X, Y and Z offset values across the area.
 
