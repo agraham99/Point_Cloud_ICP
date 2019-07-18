@@ -187,22 +187,22 @@ writeOGR(p, paste("D:/JOE_RAKOFSKY/shp/", f, sep = ''), layer = f, driver = "ESR
 # ------------------------------------------------------------------
 # MAKE SPATIAL PLOTS of the observed shifts IN A LOOP
 # empty list to populate with spplot objects
-plots = list()
-i = 0
-for (trans in c('x_trans', 'y_trans', 'z_trans')){
-  i = i+1
-
-  # run this block alone for
-  n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
-  cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
-  cuts.p = round(cuts.p,1)
-  plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans,
-                auto.key = list(title = paste0(trans, '(m)')))
-
-  plots[[i]] = plot
-}
-# arrange the plots for display
-do.call(grid.arrange, plots)
+# plots = list()
+# i = 0
+# for (trans in c('x_trans', 'y_trans', 'z_trans')){
+#   i = i+1
+# 
+#   # run this block alone for
+#   n = abs(round((max(p[[trans]]) - min(p[[trans]]))/7, 2))
+#   cuts.p = seq(min(p[[trans]]), max(p[[trans]]), n)
+#   cuts.p = round(cuts.p,1)
+#   plot = spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5, xlab = trans,
+#                 auto.key = list(title = paste0(trans, '(m)')))
+# 
+#   plots[[i]] = plot
+# }
+# # arrange the plots for display
+# do.call(grid.arrange, plots)
 
 
 
@@ -349,8 +349,8 @@ cuts.p = round(cuts.p,4)
 spplot(p, zcol = trans, cuts = cuts.p, key.space = 'right', cex = 0.5,
        auto.key = list(title = paste0(trans, '(m)')))
 
-f = gsub('.csv', '.shp', basename(points.f))
-writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
+# f = gsub('.csv', '.shp', basename(points.f))
+# writeOGR(p, paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', f, sep = ''), layer = f, driver = "ESRI Shapefile", overwrite_layer = T)
 # write.csv(p@data,paste("H:/AFRF_ICP/ICP_points/shp/", 'residuals_', basename(points.f), sep = ''))
 
 
@@ -521,66 +521,68 @@ scatter2(x = z.offset, y = icp.lm.z$fitted.values)
 # laslist = list.files("D:/JOE_RAKOFSKY/ICP_tempdir_canopy", pattern = glob2rx('DAP_?????.las'), full.names = T)
 # laslist = sample(laslist, 200)
 
-catalog_apply_shift = function(cluster, icp.lm.z){
-  las = readLAS(cluster)
-  
-  if (is.empty(las)) return(NULL)
 
+# another revamped try from the stack exchange post
+# https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
+# -----------------------------------------------------------
+lasshift = function(las)
+{
+  UseMethod("lasshift", las)
+}
+
+lasshift.LAS = function(las)
+{
   # dataframe containing the x and y coords of the original cloud
   g = data.frame(list(las$X, las$Y))
+  print(names(g))
   names(g) = c('x', 'y')
   
-  
   # predict the shifts
-  # xshift = stats::predict(icp.lm.x, newdata = g)
-  # yshift = stats::predict(icp.lm.y, newdata = g)
+  xshift = stats::predict(icp.lm.x, newdata = g)
+  yshift = stats::predict(icp.lm.y, newdata = g)
   zshift = stats::predict(icp.lm.z, newdata = g)
   
   # apply the shift values 
-  # las$X = las$X + xshift
-  # las$Y = las$Y + yshift
+  las$X = las$X + xshift
+  las$Y = las$Y + yshift
   las$Z = las$Z + zshift
   
-  # riteLAS(las)
   return(las)
-
 }
 
-test.list = list.files("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset", full.names = T)
-test.list = test.list[1:50]
+lasshift.LAScluster = function(las)
+{
+  las <- readLAS(las)                        
+  if (is.empty(las)) return(NULL)           
+  
+  las <- lasshift(las)
+  return(las)
+}
 
-# ctg = catalog("D:/JOE_RAKOFSKY/DAP_raw_rembuf_sl_subset")
-ctg = catalog(test.list)
-
-# use laz output option
-opt_laz_compression(ctg) <- TRUE
-
-# number of cores
-# opt_cores(ctg) = 8
-
-# path and name for unwarped outputs
-opt_output_files(ctg) <- paste0("D:/JOE_RAKOFSKY/mask_layers/masked_unwarp_results/", "masked_shifted_{ID}")
-# run the unwarping process
-
-# 3. Set some catalog options.
-# For this dummy example, the chunk size is 80 m and the buffer is 10 m using a single core.
-opt_chunk_buffer(ctg) <- 10
-opt_cores(ctg)        <- 1L
-opt_chunk_size(ctg)   <- 250            # small because this is a dummy example.
-opt_select(ctg)       <- "xyz"         # read only the coordinates.
-# opt_filter(ctg)       <- "-keep_first" # read only first returns.
-
-# 4. Apply a user-defined function to take advantage of the internal engine
-opt <- list(need_buffer = TRUE)   # catalog_apply will throw an error if buffer = 0
+lasshift.LAScatalog = function(las)
+{
+  # Force some options
+  # opt_select(las) <-  "*" 
+  opt_chunk_buffer(las) <- 0
+  
+  # options <- list(need_output_file = TRUE)
+  
+  output <- catalog_apply(las, lasshift)
+  output <- unlist(output)
+  output <- catalog(output)
+  return(output)
+}
 
 
-tic('catalog_apply unwarping cloud')
+ctg = catalog("H:/AFRF_ICP/DAP_Raw/ALPHA/alpha_group1_densified_point_cloud_part_6.las")
+# opt_select(ctg) <- "xyz"         # read only the coordinates.
+opt_chunk_size(ctg) <- 100       # process in chunks of ___ meters
+opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/{ID}_shifted"
+opt_cores(ctg) <- 8
+opt_chunk_buffer(ctg) <- 0       # need to force no buffer or else default is 25m
 
-new_ctg = catalog_apply(ctg, catalog_apply_shift, icp.lm.z = icp.lm.z)
-
-# measure the time of completion for the process
-toc()
-
+# run the lasshift catalog_apply method. 
+new_ctg = lasshift(ctg)
 
 
 # -----------------------------------------------------------

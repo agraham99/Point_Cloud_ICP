@@ -10,3 +10,39 @@ icp.lm.x = readRDS(file = "data/lm/icp_lm_x.rds")
 icp.lm.y = readRDS(file = "data/lm/icp_lm_y.rds")
 icp.lm.z = readRDS(file = "data/lm/icp_lm_z.rds")
 ```
+
+###  
+
+
+# https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
+# -----------------------------------------------------------
+lasshift = function(cluster)
+{
+  las = readLAS(cluster)
+  if (is.empty(las)) return(NULL)
+  # dataframe containing the x and y coords of the original cloud
+  g = data.frame(list(las$X, las$Y))
+  print(names(g))
+  names(g) = c('x', 'y')
+  
+  
+  # predict the shifts
+  # xshift = stats::predict(icp.lm.x, newdata = g)
+  # yshift = stats::predict(icp.lm.y, newdata = g)
+  zshift = stats::predict(icp.lm.z, newdata = g)
+  
+  # apply the shift values 
+  # las$X = las$X + xshift
+  # las$Y = las$Y + yshift
+  las$Z = las$Z + zshift
+  
+  return(las)
+}
+
+ctg = catalog("H:/AFRF_ICP/DAP_Raw/ALPHA/alpha_group1_densified_point_cloud_part_6.las")
+opt_select(ctg) <- "xyz"         # read only the coordinates.
+opt_chunk_size(ctg) <- 100       # process in chunks of ___ meters
+opt_output_files(ctg) <- "H:/AFRF_ICP/ICP_shift_testing/ALPHA/shifted_{ID}"
+opt_cores(ctg) <- 8
+
+catalog_apply(ctg, lasshift)
