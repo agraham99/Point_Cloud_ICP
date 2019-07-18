@@ -84,7 +84,7 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 ![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/README_Figure_1.png)  
 
-*Figure 1* Schematic of moving window operation where ICP estimated results are stored at each point.
+**Figure 1.** Schematic of moving window operation where ICP estimated results are stored at each point.
 
 See the Markdown file for [ICP Moving Window](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
 
@@ -100,7 +100,7 @@ See the Markdown file for [ICP visualization](https://github.com/spireaero/ICP/b
 
 #### [ICP Unwarp](https://github.com/spireaero/ICP/blob/master/ICP_unwarp.md)
 
-[ICP_unwarp.R](https://github.com/spireaero/ICP/blob/master/ICP_unwarp.R) is used to apply the shifts according to the models developed in *ICP Visualization*
+[ICP_unwarp.R](https://github.com/spireaero/ICP/blob/master/ICP_unwarp.R) is used to apply the shifts according to the models developed in *ICP Visualization*.
 
 See the Markdown file for [ICP Unwarp](https://github.com/spireaero/ICP/blob/master/ICP_unwarp.md)
 
