@@ -62,6 +62,8 @@ loaded via a namespace (and not attached):
 ### Overview
 
 1. Generate shift observations using [ICP_moving_window.R](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
+2. Filter, visualize and generate predictive models of the shifts across space using [ICP_visualization.R](https://github.com/spireaero/ICP/blob/master/ICP_visualization.md)
+3. Apply the non-constant transformations to the original point clouds according to the predictive models using [ICP_unwarp.R](https://github.com/spireaero/ICP/blob/master/ICP_unwarp.md)
 
 
 ### [ICP Moving Window](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
