@@ -65,7 +65,7 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 # i, isnull, coverage,   ICP,        x,          y, RMS, r1c1, r2c1, r3c1, r1c2, r2c2, r3c2, r1c3, r2c3, r3c3, r1c4, r2c4, r3c4*
 # Where 'r' and 'c' refer to row and column of the ICP transformation matrix
 
-points.f = "<data/ICP_observations/AFRF_ALPHA_step_15_win_50_icp_moving_window_log.csv>"
+points.f = "data/ICP_observations/AFRF_ALPHA_step_15_win_50_icp_moving_window_log.csv"
 points.df = read.csv(points.f, header=T, stringsAsFactors = F)
 
 # Gather all points where ICP was run and therefore RMS is not NA

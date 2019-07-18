@@ -17,7 +17,7 @@ Input clouds can be either DAP or ALS. The program was developed using ALS data 
 # R Project: ICP
 # version control with Git
 
-### install the necessary packages ###
+# install the necessary packages 
 # install.packages("lidR")
 # install.packages("sp")
 # install.packages("raster")
@@ -55,10 +55,10 @@ crs = "+proj=utm +zone=11 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 'DAP' is cloud 'to be moved' while 'ALS' is the reference cloud
 
 ``` r
-DAP.path = "D:/JOE_RAKOFSKY/DAP_raw_rembuf"
+DAP.path = "data/clouds/DAP_sample.laz"
 DAP = lidR::catalog(DAP.path)
 
-ALS.path = "D:/JOE_RAKOFSKY/ALS/raw"
+ALS.path = "data/clouds/ALS_sample.laz"
 ALS = lidR::catalog(ALS.path)
 ```
 
@@ -175,20 +175,20 @@ ALS = lidR::catalog(ALS.path)
 
     ``` r
     EXTERNAL_POINTS = F
-    EXTERNAL_POINTS_FILE = 'D:/JOE_RAKOFSKY/ArcGIS/Slave_Lake_Roads_Harvest/roads_and_harvest/rand_pts_roads.shp'
+    EXTERNAL_POINTS_FILE = '<path to external points shapefile>'
     ```
 
 -   **EXTERNAL\_BOUNDARY** & **EXTERNAL\_BOUNDARY\_FILE** - Specify a custom boundary to restrict the extent of ICP operations File is .shp
 
     ``` r
     EXTERNAL_BOUNDARY = T
-    EXTERNAL_BOUNDARY_FILE = "D:/JOE_RAKOFSKY/SL_subset/SL_subset.shp"
+    EXTERNAL_BOUNDARY_FILE = "<path to external boundary shapefile>"
     ```
 
 -   **points\_dir** - Set a location for ICP observaion points output (csv file)
 
     ``` r
-    points_dir = "D:/JOE_RAKOFSKY/ICP_points"
+    points_dir = "<path to write observations points CSV>"
     ```
 
 ------------------------------------------------------------------------

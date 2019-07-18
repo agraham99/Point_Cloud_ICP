@@ -20,7 +20,7 @@ Clouds are used as LAScatalog objects from the lidR package. Optimal matching is
 # R Project: ICP
 # version control with Git
 
-### install the necessary packages ###
+# install the necessary packages 
 # install.packages("lidR")
 # install.packages("sp")
 # install.packages("raster")

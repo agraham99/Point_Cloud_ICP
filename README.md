@@ -92,7 +92,7 @@ See the Markdown file for [ICP Moving Window](https://github.com/spireaero/ICP/b
 
 #### [ICP Visualization](https://github.com/spireaero/ICP/blob/master/ICP_visualization.md)
 
-This script
+[ICP_visualization.R](https://github.com/spireaero/ICP/blob/master/ICP_visualization.R) is used for setting filtering criteria to remove noise from the ICP observation points.  It is also used to generate and visualize the results of predictive modelling using the ICP observation points as input.
 
 
 
