@@ -64,8 +64,10 @@ loaded via a namespace (and not attached):
 
 - [CloudCompare](https://www.danielgm.net/cc/) version 2.10 or 2.11 alpha
 
+----------------------------------------------------------------------------------------------------------------------------------
 
-### Usage
+
+## Usage
 
 
 #### Overview
@@ -82,16 +84,18 @@ The reference and data (to-be-aligned) point-cloud are clipped to the extent of 
 
 ![Image of ICP Moving Window](https://github.com/spireaero/ICP/blob/master/images/moving_window.png)  
 
+*Figure 1* Schematic of moving window operation where ICP estimated results are stored at each point.
+
 See the Markdown file for [ICP Moving Window](https://github.com/spireaero/ICP/blob/master/ICP_moving_window.md)
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-### [ICP Visualization](https://github.com/spireaero/ICP/blob/master/ICP_visualization.md)
+#### [ICP Visualization](https://github.com/spireaero/ICP/blob/master/ICP_visualization.md)
 
 
 
 
 
-###   
+####    
 
 

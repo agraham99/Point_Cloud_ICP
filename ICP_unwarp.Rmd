@@ -26,9 +26,9 @@ icp.lm.z = readRDS(file = "data/lm/icp_lm_z.rds")
 
 For more info see: 
 
-* https://cran.r-project.org/web/packages/lidR/vignettes/lidR-catalog-apply-examples.html
+- https://cran.r-project.org/web/packages/lidR/vignettes/lidR-catalog-apply-examples.html
 
-* https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
+- https://gis.stackexchange.com/questions/311150/non-constant-transformation-of-photogrammetric-point-clouds-in-r
 
 First create a generic function usable for mulitple classes
 ```{r eval = FALSE, include = TRUE}
